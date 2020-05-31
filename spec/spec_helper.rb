@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "ruby/keycase"
+require "keycase"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

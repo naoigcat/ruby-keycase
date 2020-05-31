@@ -1,6 +1,6 @@
-RSpec.describe Ruby::Keycase do
+RSpec.describe Keycase do
   it "has a version number" do
-    expect(Ruby::Keycase::VERSION).not_to be nil
+    expect(Keycase::VERSION).not_to be nil
   end
 
   it "does something useful" do
