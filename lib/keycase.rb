@@ -1,6 +1,8 @@
 require "keycase/version"
+require "keycase/camel_case"
+require "keycase/kebab_case"
+require "keycase/pascal_case"
+require "keycase/snake_case"
 
 module Keycase
-  class Error < StandardError; end
-  # Your code goes here...
 end

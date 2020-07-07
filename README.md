@@ -21,7 +21,48 @@ Or install it yourself as:
 
 ##  Usage
 
-TODO: Write usage instructions here
+```sh
+$ irb --context-mode=1
+```
+
+```rb
+> require "bundler/setup"
+> require "keycase"
+> using Keycase::CamelCase
+> hash = {
+  :symbol_key => "symbol value",
+  "text_key" => "text value",
+  :camelKey => "camel value",
+  :PascalKey => "pascal value",
+  :nested_hash => {
+    :nested_symbol_key => "nested symbol value",
+    "nested_text_key" => "nested text value",
+    :nestedCamelKey => "nested camel value",
+    :NestedPascalKey => "nested pascal value",
+  },
+  :nested_array => [
+    { :array_nested_hash_1 => "nested value 1" },
+    { :array_nested_hash_2 => "nested value 2" },
+  ],
+}
+> hash.with_camel_case_keys
+=> {
+  :symbolKey => "symbol value",
+  "textKey" => "text value",
+  :camelKey => "camel value",
+  :pascalKey => "pascal value",
+  :nestedHash => {
+    :nestedSymbolKey => "nested symbol value",
+    "nestedTextKey" => "nested text value",
+    :nestedCamelKey => "nested camel value",
+    :nestedPascalKey => "nested pascal value",
+  },
+  :nestedArray => [
+    { :arrayNestedHash1 => "nested value 1" },
+    { :arrayNestedHash2 => "nested value 2" },
+  ],
+}
+```
 
 ##  Development
 
