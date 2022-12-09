@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "lib/keycase/version"
 
 Gem::Specification.new do |spec|
@@ -26,4 +28,5 @@ Gem::Specification.new do |spec|
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
+  spec.metadata["rubygems_mfa_required"] = "true"
 end

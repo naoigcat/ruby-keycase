@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 RSpec.describe Keycase::SnakeCase do
-  using Keycase::SnakeCase
+  using described_class
   it "convert strings" do
     expect("a".to_snake_case).to eq "a"
     expect("A".to_snake_case).to eq "a"
@@ -24,14 +26,17 @@ RSpec.describe Keycase::SnakeCase do
     expect("DB2Connector".to_snake_case).to eq "db2_connector"
     expect("w3cMarkupValidation".to_snake_case).to eq "w3c_markup_validation"
   end
+
   it "just returns numeric as is" do
     expect(1.to_snake_case).to eq 1
     expect(1.1.to_snake_case).to eq 1.1
   end
+
   it "converts symbol as string" do
     expect(:Symbol.to_snake_case).to eq :symbol
     expect(:someWords.to_snake_case).to eq :some_words
   end
+
   it "converts hash keys" do
     hash = {
       :symbol_key => "symbol value",
@@ -42,12 +47,12 @@ RSpec.describe Keycase::SnakeCase do
         :nested_symbol_key => "nested symbol value",
         "nested_text_key" => "nested text value",
         :nestedCamelKey => "nested camel value",
-        :NestedPascalKey => "nested pascal value",
+        :NestedPascalKey => "nested pascal value"
       },
       :nested_array => [
-        { :array_nested_hash_1 => "nested value 1" },
-        { :array_nested_hash_2 => "nested value 2" },
-      ],
+        { array_nested_hash_1: "nested value 1" },
+        { array_nested_hash_2: "nested value 2" }
+      ]
     }
     converted_hash = {
       :symbol_key => "symbol value",
@@ -58,12 +63,12 @@ RSpec.describe Keycase::SnakeCase do
         :nested_symbol_key => "nested symbol value",
         "nested_text_key" => "nested text value",
         :nested_camel_key => "nested camel value",
-        :nested_pascal_key => "nested pascal value",
+        :nested_pascal_key => "nested pascal value"
       },
       :nested_array => [
-        { :array_nested_hash_1 => "nested value 1" },
-        { :array_nested_hash_2 => "nested value 2" },
-      ],
+        { array_nested_hash_1: "nested value 1" },
+        { array_nested_hash_2: "nested value 2" }
+      ]
     }
     expect(hash.with_snake_case_keys).to eq converted_hash
   end

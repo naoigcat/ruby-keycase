@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Keycase
   module CamelCase
     refine Object do

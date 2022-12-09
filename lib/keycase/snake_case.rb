@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Keycase
   module SnakeCase
     refine Object do

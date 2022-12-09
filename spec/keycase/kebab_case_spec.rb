@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 RSpec.describe Keycase::KebabCase do
-  using Keycase::KebabCase
+  using described_class
   it "convert strings" do
     expect("a".to_kebab_case).to eq "a"
     expect("A".to_kebab_case).to eq "a"
@@ -24,14 +26,17 @@ RSpec.describe Keycase::KebabCase do
     expect("DB2Connector".to_kebab_case).to eq "db2-connector"
     expect("w3cMarkupValidation".to_kebab_case).to eq "w3c-markup-validation"
   end
+
   it "just returns numeric as is" do
     expect(1.to_kebab_case).to eq 1
     expect(1.1.to_kebab_case).to eq 1.1
   end
+
   it "converts symbol as string" do
     expect(:Symbol.to_kebab_case).to eq :symbol
     expect(:some_words.to_kebab_case).to eq :"some-words"
   end
+
   it "converts hash keys" do
     hash = {
       :symbol_key => "symbol value",
@@ -42,12 +47,12 @@ RSpec.describe Keycase::KebabCase do
         :nested_symbol_key => "nested symbol value",
         "nested_text_key" => "nested text value",
         :nestedCamelKey => "nested camel value",
-        :NestedPascalKey => "nested pascal value",
+        :NestedPascalKey => "nested pascal value"
       },
       :nested_array => [
-        { :array_nested_hash_1 => "nested value 1" },
-        { :array_nested_hash_2 => "nested value 2" },
-      ],
+        { array_nested_hash_1: "nested value 1" },
+        { array_nested_hash_2: "nested value 2" }
+      ]
     }
     converted_hash = {
       :"symbol-key" => "symbol value",
@@ -58,12 +63,12 @@ RSpec.describe Keycase::KebabCase do
         :"nested-symbol-key" => "nested symbol value",
         "nested-text-key" => "nested text value",
         :"nested-camel-key" => "nested camel value",
-        :"nested-pascal-key" => "nested pascal value",
+        :"nested-pascal-key" => "nested pascal value"
       },
       :"nested-array" => [
-        { :"array-nested-hash-1" => "nested value 1" },
-        { :"array-nested-hash-2" => "nested value 2" },
-      ],
+        { "array-nested-hash-1": "nested value 1" },
+        { "array-nested-hash-2": "nested value 2" }
+      ]
     }
     expect(hash.with_kebab_case_keys).to eq converted_hash
   end
