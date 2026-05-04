@@ -21,8 +21,8 @@ Gem::Specification.new do |spec|
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
   spec.require_paths          = ["lib"]
   spec.files                  = Dir.chdir(File.expand_path(__dir__)) do
-    `git ls-files -z`.split("\x0").reject do |f|
-      f.match(%r{^(test|spec|features|bin)/})
+    `git ls-files -z`.split("\x0").select do |f|
+      f.match(%r{^lib/|^LICENSE\.md$|^README\.md$|^keycase\.gemspec$})
     end
   end
 
