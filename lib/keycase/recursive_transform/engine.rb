@@ -16,6 +16,10 @@ module Keycase
           begin
             hash.each_with_object({}) do |(key, value), memo|
               new_key = key_converter.call(key)
+              if memo.key?(new_key)
+                raise KeyCollisionError, "Keycase detected a key collision after conversion: #{new_key.inspect}"
+              end
+
               memo[new_key] = transform_value(
                 value,
                 visiting,

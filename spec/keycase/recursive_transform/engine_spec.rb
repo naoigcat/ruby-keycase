@@ -36,4 +36,11 @@ RSpec.describe Keycase::RecursiveTransform::Engine do
       expect { deep.with_camel_case_keys(max_depth: 1) }.to raise_error(Keycase::StructureTooDeepError)
     end
   end
+
+  describe "key collision detection" do
+    it "raises when converted Hash keys collide" do
+      hash = { foo_bar: 1, fooBar: 2 }
+      expect { hash.with_camel_case_keys }.to raise_error(Keycase::KeyCollisionError)
+    end
+  end
 end
