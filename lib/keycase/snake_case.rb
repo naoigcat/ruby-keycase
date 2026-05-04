@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require "set"
+
+require_relative "recursive_transform/engine"
+
 module Keycase
   module SnakeCase
     refine Object do
@@ -7,7 +11,7 @@ module Keycase
         self
       end
 
-      def with_snake_case_keys
+      def with_snake_case_keys(_options = {})
         self
       end
     end
@@ -29,17 +33,27 @@ module Keycase
     end
 
     refine Array do
-      def with_snake_case_keys
-        map do |value| # rubocop:disable Style/SymbolProc
-          value.with_snake_case_keys
+      def with_snake_case_keys(options = {})
+        Keycase::RecursiveTransform::Engine.transform_array(
+          self,
+          ::Set.new,
+          0,
+          options[:max_depth]
+        ) do |key|
+          key.to_snake_case
         end
       end
     end
 
     refine Hash do
-      def with_snake_case_keys
-        each_with_object({}) do |(key, value), memo|
-          memo[key.to_snake_case] = value.with_snake_case_keys
+      def with_snake_case_keys(options = {})
+        Keycase::RecursiveTransform::Engine.transform_hash(
+          self,
+          ::Set.new,
+          0,
+          options[:max_depth]
+        ) do |key|
+          key.to_snake_case
         end
       end
     end
