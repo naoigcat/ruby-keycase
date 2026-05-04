@@ -17,7 +17,9 @@ module Keycase
             hash.each_with_object({}) do |(key, value), memo|
               new_key = key_converter.call(key)
               if memo.key?(new_key)
-                raise KeyCollisionError, "Keycase detected a key collision: #{key.inspect} converted to #{new_key.inspect}, which already exists in the transformed hash"
+                message = "Keycase detected a key collision: #{key.inspect} converted to " \
+                          "#{new_key.inspect}, which already exists in the transformed hash"
+                raise KeyCollisionError, message
               end
 
               memo[new_key] = transform_value(
