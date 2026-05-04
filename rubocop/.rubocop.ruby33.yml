@@ -1,0 +1,15 @@
+inherit_from:
+  - .rubocop.default.yml
+
+plugins:
+  - rubocop-rake
+  - rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 2.5
+  DisplayCopNames: true
+  DisplayStyleGuide: true
+  NewCops: enable
+
+Naming/BlockForwarding:
+  Enabled: false

@@ -1,0 +1,124 @@
+[tools]
+ruby = "3.4.9"
+
+[tasks.rubocop23]
+description = "RuboCop in Docker (official ruby:2.3.8)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby23.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec23]
+description = "RSpec in Docker (official ruby:2.3.8)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby23.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop24]
+description = "RuboCop in Docker (official ruby:2.4.10)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby24.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec24]
+description = "RSpec in Docker (official ruby:2.4.10)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby24.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop25]
+description = "RuboCop in Docker (official ruby:2.5.9)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby25.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec25]
+description = "RSpec in Docker (official ruby:2.5.9)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby25.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop26]
+description = "RuboCop in Docker (official ruby:2.6.10)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby26.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec26]
+description = "RSpec in Docker (official ruby:2.6.10)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby26.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop27]
+description = "RuboCop in Docker (official ruby:2.7.8)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby27.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec27]
+description = "RSpec in Docker (official ruby:2.7.8)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby27.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop30]
+description = "RuboCop in Docker (official ruby:3.0.7)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby30.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec30]
+description = "RSpec in Docker (official ruby:3.0.7)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby30.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop31]
+description = "RuboCop in Docker (official ruby:3.1.7)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby31.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec31]
+description = "RSpec in Docker (official ruby:3.1.7)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby31.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop32]
+description = "RuboCop in Docker (official ruby:3.2.11)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby32.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec32]
+description = "RSpec in Docker (official ruby:3.2.11)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby32.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop33]
+description = "RuboCop in Docker (official ruby:3.3.11)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby33.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec33]
+description = "RSpec in Docker (official ruby:3.3.11)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby33.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop34]
+description = "RuboCop in Docker (official ruby:3.4.9)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby34.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec34]
+description = "RSpec in Docker (official ruby:3.4.9)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby34.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop40]
+description = "RuboCop in Docker (official ruby:4.0.3)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby40.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rubocop\""
+
+[tasks.rspec40]
+description = "RSpec in Docker (official ruby:4.0.3)"
+run = "docker compose -f compose/compose.yaml -f compose/compose.ruby40.yaml run --rm app bash -c \"bundle install --jobs 4 --retry 3; bundle exec rspec\""
+
+[tasks.rubocop]
+description = "RuboCop in Docker across Ruby 2.3–4.0"
+depends = [
+  "rubocop23",
+  "rubocop24",
+  "rubocop25",
+  "rubocop26",
+  "rubocop27",
+  "rubocop30",
+  "rubocop31",
+  "rubocop32",
+  "rubocop33",
+  "rubocop34",
+  "rubocop40",
+]
+run = ":"
+
+[tasks.rspec]
+description = "RSpec in Docker across Ruby 2.3–4.0"
+depends = [
+  "rspec23",
+  "rspec24",
+  "rspec25",
+  "rspec26",
+  "rspec27",
+  "rspec30",
+  "rspec31",
+  "rspec32",
+  "rspec33",
+  "rspec34",
+  "rspec40",
+]
+run = ":"

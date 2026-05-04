@@ -1,0 +1,9 @@
+services:
+  app:
+    image: ruby:2.7.8
+    volumes:
+      - ../rubocop/.rubocop.ruby27.yml:/app/.rubocop.yml
+
+volumes:
+  bundle_vendor:
+    name: keycase-bundle-ruby-2.7.8

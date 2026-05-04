@@ -1,0 +1,18 @@
+services:
+  app:
+    image: ruby:3.4.9
+    working_dir: /app
+    environment:
+      BUNDLE_PATH: /app/vendor/bundle
+    volumes:
+      - ../lib:/app/lib
+      - ../spec:/app/spec
+      - ../.git:/app/.git
+      - ../.rspec:/app/.rspec
+      - ../rubocop/.rubocop.default.yml:/app/.rubocop.default.yml
+      - ../Gemfile:/app/Gemfile
+      - ../keycase.gemspec:/app/keycase.gemspec
+      - bundle_vendor:/app/vendor/bundle
+
+volumes:
+  bundle_vendor: {}
