@@ -70,6 +70,33 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+Tasks are defined in `mise.toml`. They run **RuboCop, and RSpec inside Docker** (via Docker Compose), so Docker must be available.
+
+Run **RuboCop** on every supported Ruby image (2.3 through 4.0):
+
+```sh
+mise run -j 1 rubocop
+```
+
+Run **RSpec** the same way:
+
+```sh
+mise run -j 1 rspec
+```
+
+These commands execute the version-specific tasks in order (`rubocop23` … `rubocop40`, `rspec23` … `rspec40`). To run against a **single** Ruby version, use the matching task name, for example:
+
+```sh
+mise run rubocop34
+mise run rspec34
+```
+
+To list all tasks and descriptions:
+
+```sh
+mise tasks
+```
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at <https://github.com/naoigcat/ruby-keycase>.
