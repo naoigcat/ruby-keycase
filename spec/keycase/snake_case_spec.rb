@@ -23,6 +23,7 @@ RSpec.describe Keycase::SnakeCase do
     expect("someWords".to_snake_case).to eq "some_words"
     expect("SomeWords".to_snake_case).to eq "some_words"
     expect("HTML Generator".to_snake_case).to eq "html_generator"
+    expect("HTTPResponseCode".to_snake_case).to eq "http_response_code"
     expect("DB2Connector".to_snake_case).to eq "db2_connector"
     expect("w3cMarkupValidation".to_snake_case).to eq "w3c_markup_validation"
   end

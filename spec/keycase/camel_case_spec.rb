@@ -23,6 +23,7 @@ RSpec.describe Keycase::CamelCase do
     expect("someWords".to_camel_case).to eq "someWords"
     expect("SomeWords".to_camel_case).to eq "someWords"
     expect("HTML Generator".to_camel_case).to eq "htmlGenerator"
+    expect("APIResponse".to_camel_case).to eq "apiResponse"
     expect("DB2Connector".to_camel_case).to eq "db2Connector"
     expect("w3cMarkupValidation".to_camel_case).to eq "w3cMarkupValidation"
   end

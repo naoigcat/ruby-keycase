@@ -23,6 +23,7 @@ RSpec.describe Keycase::PascalCase do
     expect("someWords".to_pascal_case).to eq "SomeWords"
     expect("SomeWords".to_pascal_case).to eq "SomeWords"
     expect("HTML Generator".to_pascal_case).to eq "HtmlGenerator"
+    expect("APIResponse".to_pascal_case).to eq "ApiResponse"
     expect("DB2Connector".to_pascal_case).to eq "Db2Connector"
     expect("w3cMarkupValidation".to_pascal_case).to eq "W3cMarkupValidation"
   end

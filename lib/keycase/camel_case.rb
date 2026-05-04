@@ -18,7 +18,9 @@ module Keycase
 
     refine String do
       def to_camel_case
-        gsub(/(?<=[0-9a-z])(?=[A-Z])/) do |_|
+        gsub(/(?<=[A-Z])(?=[A-Z][a-z])/) do |_|
+          "_"
+        end.gsub(/(?<=[0-9a-z])(?=[A-Z])/) do |_|
           "_"
         end.gsub(/(?<=\b|\W|_)[0-9A-Za-z]+(?=\b|\W|_)/) do |matched|
           matched.capitalize

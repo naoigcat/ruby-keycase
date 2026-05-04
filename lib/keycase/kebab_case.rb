@@ -18,7 +18,9 @@ module Keycase
 
     refine String do
       def to_kebab_case
-        gsub(/(?<=[0-9a-z])(?=[A-Z])/) do |_|
+        gsub(/(?<=[A-Z])(?=[A-Z][a-z])/) do |_|
+          "-"
+        end.gsub(/(?<=[0-9a-z])(?=[A-Z])/) do |_|
           "-"
         end.gsub(/(?<=\b|\W|_)[0-9A-Za-z]+(?=\b|\W|_)/) do |matched|
           "-#{matched.downcase}"

@@ -23,6 +23,7 @@ RSpec.describe Keycase::KebabCase do
     expect("someWords".to_kebab_case).to eq "some-words"
     expect("SomeWords".to_kebab_case).to eq "some-words"
     expect("HTML Generator".to_kebab_case).to eq "html-generator"
+    expect("HTTPResponseCode".to_kebab_case).to eq "http-response-code"
     expect("DB2Connector".to_kebab_case).to eq "db2-connector"
     expect("w3cMarkupValidation".to_kebab_case).to eq "w3c-markup-validation"
   end
