@@ -97,6 +97,23 @@ To list all tasks and descriptions:
 mise tasks
 ```
 
+## Release Authentication
+
+Gem releases from GitHub Actions use RubyGems Trusted Publishing. No long-lived RubyGems API key or GitHub secret is required; GitHub Actions obtains a short-lived RubyGems API token through OIDC during the release job.
+
+Configure the trusted publisher once on RubyGems.org:
+
+1.  Log in to <https://rubygems.org> with an owner account for the `keycase` gem.
+2.  Open the `keycase` gem page and go to `Trusted publishers`.
+3.  Create a GitHub Actions trusted publisher with these values:
+
+    -   Repository owner: `naoigcat`
+    -   Repository name: `ruby-keycase`
+    -   Workflow filename: `release.yml`
+    -   Environment name: `release`
+
+After this setup, run the `Release Gem` workflow manually from GitHub Actions. Enter the version already committed in `lib/keycase/version.rb`; the workflow verifies the version, creates the `v<version>` tag through Bundler's release task, and publishes the gem to RubyGems.org.
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at <https://github.com/naoigcat/ruby-keycase>.
