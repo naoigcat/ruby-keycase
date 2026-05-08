@@ -64,6 +64,96 @@ irb --context-mode=1
 }
 ```
 
+## Interface
+
+Keycase is provided as Ruby refinements. Enable the case conversion you want with `using`.
+
+| Refinement | String/Symbol conversion | Hash/Array key conversion |
+| --- | --- | --- |
+| `Keycase::CamelCase` | `to_camel_case` | `with_camel_case_keys` |
+| `Keycase::PascalCase` | `to_pascal_case` | `with_pascal_case_keys` |
+| `Keycase::SnakeCase` | `to_snake_case` | `with_snake_case_keys` |
+| `Keycase::ScreamingSnakeCase` | `to_screaming_snake_case` | `with_screaming_snake_case_keys` |
+| `Keycase::KebabCase` | `to_kebab_case` | `with_kebab_case_keys` |
+| `Keycase::TrainCase` | `to_train_case` | `with_train_case_keys` |
+
+`String#to_*` returns a converted string. `Symbol#to_*` returns a converted symbol. Other objects respond to these methods and return themselves unchanged.
+
+`Hash#with_*_keys` and `Array#with_*_keys` recursively convert only Hash keys.
+Arrays are traversed so hashes inside arrays are converted. Values that are not Hash or Array objects are returned unchanged.
+Key type is preserved: string keys remain strings, and symbol keys remain symbols.
+
+```rb
+using Keycase::SnakeCase
+
+"userID".to_snake_case
+# => "user_id"
+
+:userID.to_snake_case
+# => :user_id
+
+[
+  { "userID" => 1 },
+  { :createdAt => "2026-05-09" },
+].with_snake_case_keys
+# => [
+#   { "user_id" => 1 },
+#   { :created_at => "2026-05-09" },
+# ]
+```
+
+## Options
+
+All `with_*_keys` methods accept an options hash.
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `max_depth` | `nil` | Maximum nested Hash/Array depth to traverse. `nil` means no depth limit. |
+
+Depth starts at `0` for the receiver itself. Each nested Hash or Array increases
+the depth by `1`. Leaf values are not counted.
+
+```rb
+using Keycase::CamelCase
+
+{ user: { profile_data: { display_name: "Alice" } } }.with_camel_case_keys(max_depth: 2)
+# => { :user => { :profileData => { :displayName => "Alice" } } }
+
+{ user: { profile_data: { display_name: "Alice" } } }.with_camel_case_keys(max_depth: 1)
+# raises Keycase::StructureTooDeepError
+```
+
+## Errors
+
+`with_*_keys` raises Keycase-specific errors when recursive conversion cannot be completed without ambiguity or infinite traversal.
+
+| Error | Raised when |
+| --- | --- |
+| `Keycase::CircularStructureError` | A Hash or Array references itself through the current traversal path. |
+| `Keycase::KeyCollisionError` | Multiple source keys in the same Hash convert to the same destination key. |
+| `Keycase::StructureTooDeepError` | Traversal exceeds the supplied `max_depth`. |
+
+Circular references are rejected because recursive conversion could not finish.
+Reusing the same non-circular object from multiple places is supported; each path is converted into a separate result object.
+
+```rb
+using Keycase::CamelCase
+
+hash = {}
+hash[:self_reference] = hash
+hash.with_camel_case_keys
+# raises Keycase::CircularStructureError
+```
+
+Key collisions are rejected so conversion never silently overwrites data. The check is performed per Hash after the keys are converted.
+
+```rb
+using Keycase::CamelCase
+
+{ :user_id => 1, :userID => 2 }.with_camel_case_keys
+# raises Keycase::KeyCollisionError
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests with the local Ruby version defined in `mise.toml` (currently Ruby 3.4.9). You can also run `bin/console` for an interactive prompt that will allow you to experiment.
