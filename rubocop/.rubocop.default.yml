@@ -32,9 +32,11 @@ Style/StringLiteralsInInterpolation:
 Style/SymbolProc:
   Exclude:
     - lib/keycase/camel_case.rb
-    - lib/keycase/pascal_case.rb
-    - lib/keycase/snake_case.rb
     - lib/keycase/kebab_case.rb
+    - lib/keycase/pascal_case.rb
+    - lib/keycase/screaming_snake_case.rb
+    - lib/keycase/snake_case.rb
+    - lib/keycase/train_case.rb
 
 RSpec/ExampleLength:
   Enabled: false

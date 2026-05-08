@@ -26,6 +26,12 @@ RSpec.describe Keycase::PascalCase do
     expect("APIResponse".to_pascal_case).to eq "ApiResponse"
     expect("DB2Connector".to_pascal_case).to eq "Db2Connector"
     expect("w3cMarkupValidation".to_pascal_case).to eq "W3cMarkupValidation"
+    expect("Some-Words".to_pascal_case).to eq "SomeWords"
+    expect("Content-Type".to_pascal_case).to eq "ContentType"
+    expect("HTTP-Response-Code".to_pascal_case).to eq "HttpResponseCode"
+    expect("Html-Generator".to_pascal_case).to eq "HtmlGenerator"
+    expect("Db2-Connector".to_pascal_case).to eq "Db2Connector"
+    expect("W3c-Markup-Validation".to_pascal_case).to eq "W3cMarkupValidation"
   end
 
   it "just returns numeric as is" do
@@ -36,6 +42,8 @@ RSpec.describe Keycase::PascalCase do
   it "converts symbol as string" do
     expect(:Symbol.to_pascal_case).to eq :Symbol
     expect(:some_words.to_pascal_case).to eq :SomeWords
+    expect(:"Some-Words".to_pascal_case).to eq :SomeWords
+    expect(:"Content-Type".to_pascal_case).to eq :ContentType
   end
 
   it "converts hash keys" do
@@ -44,6 +52,12 @@ RSpec.describe Keycase::PascalCase do
       "text_key" => "text value",
       :camelKey => "camel value",
       :PascalKey => "pascal value",
+      "Content-Type" => "gzip",
+      :"Some-Words" => "ok",
+      "HTTP-Response-Code" => 418,
+      "Nested-Train" => {
+        "Inner-Key" => 1
+      },
       :nested_hash => {
         :nested_symbol_key => "nested symbol value",
         "nested_text_key" => "nested text value",
@@ -60,6 +74,12 @@ RSpec.describe Keycase::PascalCase do
       "TextKey" => "text value",
       :CamelKey => "camel value",
       :PascalKey => "pascal value",
+      "ContentType" => "gzip",
+      SomeWords: "ok",
+      "HttpResponseCode" => 418,
+      "NestedTrain" => {
+        "InnerKey" => 1
+      },
       :NestedHash => {
         :NestedSymbolKey => "nested symbol value",
         "NestedTextKey" => "nested text value",

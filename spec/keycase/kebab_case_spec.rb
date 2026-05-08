@@ -26,6 +26,12 @@ RSpec.describe Keycase::KebabCase do
     expect("HTTPResponseCode".to_kebab_case).to eq "http-response-code"
     expect("DB2Connector".to_kebab_case).to eq "db2-connector"
     expect("w3cMarkupValidation".to_kebab_case).to eq "w3c-markup-validation"
+    expect("Some-Words".to_kebab_case).to eq "some-words"
+    expect("Content-Type".to_kebab_case).to eq "content-type"
+    expect("HTTP-Response-Code".to_kebab_case).to eq "http-response-code"
+    expect("Html-Generator".to_kebab_case).to eq "html-generator"
+    expect("Db2-Connector".to_kebab_case).to eq "db2-connector"
+    expect("W3c-Markup-Validation".to_kebab_case).to eq "w3c-markup-validation"
   end
 
   it "just returns numeric as is" do
@@ -36,6 +42,8 @@ RSpec.describe Keycase::KebabCase do
   it "converts symbol as string" do
     expect(:Symbol.to_kebab_case).to eq :symbol
     expect(:some_words.to_kebab_case).to eq :"some-words"
+    expect(:"Some-Words".to_kebab_case).to eq :"some-words"
+    expect(:"Content-Type".to_kebab_case).to eq :"content-type"
   end
 
   it "converts hash keys" do
@@ -44,6 +52,12 @@ RSpec.describe Keycase::KebabCase do
       "text_key" => "text value",
       :camelKey => "camel value",
       :PascalKey => "pascal value",
+      "Content-Type" => "gzip",
+      :"Some-Words" => "ok",
+      "HTTP-Response-Code" => 418,
+      "Nested-Train" => {
+        "Inner-Key" => 1
+      },
       :nested_hash => {
         :nested_symbol_key => "nested symbol value",
         "nested_text_key" => "nested text value",
@@ -60,6 +74,12 @@ RSpec.describe Keycase::KebabCase do
       "text-key" => "text value",
       :"camel-key" => "camel value",
       :"pascal-key" => "pascal value",
+      "content-type" => "gzip",
+      "some-words": "ok",
+      "http-response-code" => 418,
+      "nested-train" => {
+        "inner-key" => 1
+      },
       :"nested-hash" => {
         :"nested-symbol-key" => "nested symbol value",
         "nested-text-key" => "nested text value",
