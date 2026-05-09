@@ -194,7 +194,7 @@ Gem releases from GitHub Actions use RubyGems Trusted Publishing. No long-lived 
 Configure the trusted publisher once on RubyGems.org:
 
 1.  Log in to <https://rubygems.org> with an owner account for the `keycase` gem.
-2.  Open the `keycase` gem page and go to `Trusted publishers`.
+2.  Open the [`keycase`](https://rubygems.org/gems/keycase) gem page and go to `Trusted publishers`.
 3.  Create a GitHub Actions trusted publisher with these values:
 
     -   Repository owner: `naoigcat`
