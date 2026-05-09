@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 require "keycase/version"
-require "keycase/recursive_transform/errors"
-require "keycase/recursive_transform/engine"
+require "keycase/support/errors"
+require "keycase/support/transformer"
+require "keycase/support/tokenizer"
 require "keycase/camel_case"
 require "keycase/kebab_case"
 require "keycase/pascal_case"

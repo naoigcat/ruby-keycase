@@ -2,7 +2,8 @@
 
 require "set"
 
-require_relative "recursive_transform/engine"
+require_relative "support/transformer"
+require_relative "support/tokenizer"
 
 module Keycase
   module CamelCase
@@ -18,17 +19,9 @@ module Keycase
 
     refine String do
       def to_camel_case
-        gsub(/(?<=[A-Z])(?=[A-Z][a-z])/) do |_|
-          "_"
-        end.gsub(/(?<=[0-9a-z])(?=[A-Z])/) do |_|
-          "_"
-        end.gsub(/(?<=\b|\W|_)[0-9A-Za-z]+(?=\b|\W|_)/) do |matched|
-          matched.capitalize
-        end.sub(/^(?:\W|_)*([A-Z]+(?=[A-Z][0-9A-Za-z]|\d|$)|[A-Z][a-z])/) do |_|
-          Regexp.last_match(1).downcase
-        end.gsub(/(?:\b|\W|_)*([0-9A-Z])/) do |_|
-          Regexp.last_match(1)
-        end.gsub(/(?:\W|_)*$/, "")
+        Keycase::Support::Tokenizer.words(self).map do |word|
+          word.capitalize
+        end.join.sub(/^./, &:downcase)
       end
     end
 
@@ -40,7 +33,7 @@ module Keycase
 
     refine Array do
       def with_camel_case_keys(options = {})
-        Keycase::RecursiveTransform::Engine.transform_array(
+        Keycase::Support::Transformer.transform_array(
           self,
           ::Set.new,
           0,
@@ -53,7 +46,7 @@ module Keycase
 
     refine Hash do
       def with_camel_case_keys(options = {})
-        Keycase::RecursiveTransform::Engine.transform_hash(
+        Keycase::Support::Transformer.transform_hash(
           self,
           ::Set.new,
           0,

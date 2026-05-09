@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Keycase::RecursiveTransform::Engine do
+RSpec.describe Keycase::Support::Transformer do
   using Keycase::CamelCase
 
   describe "cycle detection" do

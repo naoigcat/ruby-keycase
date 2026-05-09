@@ -3,8 +3,8 @@
 require_relative "errors"
 
 module Keycase
-  module RecursiveTransform
-    module Engine
+  module Support
+    module Transformer
       class << self
         def transform_hash(hash, visiting, depth, max_depth, &key_converter)
           check_depth!(depth, max_depth)

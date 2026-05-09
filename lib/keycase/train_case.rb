@@ -2,7 +2,8 @@
 
 require "set"
 
-require_relative "recursive_transform/engine"
+require_relative "support/transformer"
+require_relative "support/tokenizer"
 
 module Keycase
   module TrainCase
@@ -18,13 +19,9 @@ module Keycase
 
     refine String do
       def to_train_case
-        gsub(/(?<=[A-Z])(?=[A-Z][a-z])/) do |_|
-          "-"
-        end.gsub(/(?<=[0-9a-z])(?=[A-Z])/) do |_|
-          "-"
-        end.gsub(/(?<=\b|\W|_)[0-9A-Za-z]+(?=\b|\W|_)/) do |matched|
-          "-#{matched.downcase}"
-        end.gsub(/(?:\W|_)+/, "-").gsub(/^(?:\W|_)*|(?:\W|_)*$/, "").downcase.split("-", -1).map(&:capitalize).join("-")
+        Keycase::Support::Tokenizer.words(self).map do |word|
+          word.capitalize
+        end.join("-")
       end
     end
 
@@ -36,7 +33,7 @@ module Keycase
 
     refine Array do
       def with_train_case_keys(options = {})
-        Keycase::RecursiveTransform::Engine.transform_array(
+        Keycase::Support::Transformer.transform_array(
           self,
           ::Set.new,
           0,
@@ -49,7 +46,7 @@ module Keycase
 
     refine Hash do
       def with_train_case_keys(options = {})
-        Keycase::RecursiveTransform::Engine.transform_hash(
+        Keycase::Support::Transformer.transform_hash(
           self,
           ::Set.new,
           0,
