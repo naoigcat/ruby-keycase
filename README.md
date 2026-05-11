@@ -21,6 +21,25 @@ Or install it yourself as:
 
 ## Usage
 
+### Module functions (no `using`)
+
+Call methods on `Keycase` when refinements are awkward (Rails, other gems, shared libraries).
+
+```rb
+require "keycase"
+
+Keycase.camel_case("user_id")          # => "userId"
+Keycase.camel_case(:user_id)          # => :userId
+Keycase.camel_case(42)                 # => 42
+
+Keycase.with_camel_case_keys({ "user_id" => 1, nested: { "item_count" => 2 } })
+# => { "userId" => 1, :nested => { "itemCount" => 2 } }
+```
+
+See [Interface](#interface) for the full list of `Keycase.*` methods and their refinement equivalents.
+
+### Refinements
+
 ```sh
 irb --context-mode=1
 ```
@@ -66,18 +85,22 @@ irb --context-mode=1
 
 ## Interface
 
-Keycase is provided as Ruby refinements. Enable the case conversion you want with `using`.
+Keycase offers **module functions** on `Keycase` (no `using` required) and the same behavior as **refinements** when you `using Keycase::CamelCase` (and similarly for other case modules).
 
-| Refinement | String/Symbol conversion | Hash/Array key conversion |
-| --- | --- | --- |
-| `Keycase::CamelCase` | `to_camel_case` | `with_camel_case_keys` |
-| `Keycase::PascalCase` | `to_pascal_case` | `with_pascal_case_keys` |
-| `Keycase::SnakeCase` | `to_snake_case` | `with_snake_case_keys` |
-| `Keycase::ScreamingSnakeCase` | `to_screaming_snake_case` | `with_screaming_snake_case_keys` |
-| `Keycase::KebabCase` | `to_kebab_case` | `with_kebab_case_keys` |
-| `Keycase::TrainCase` | `to_train_case` | `with_train_case_keys` |
+| Refinement | `Keycase` module function (scalar) | `Keycase` module function (Hash/Array keys) | Refinement instance methods |
+| --- | --- | --- | --- |
+| `Keycase::CamelCase` | `Keycase.camel_case` | `Keycase.with_camel_case_keys` | `to_camel_case` / `with_camel_case_keys` |
+| `Keycase::PascalCase` | `Keycase.pascal_case` | `Keycase.with_pascal_case_keys` | `to_pascal_case` / `with_pascal_case_keys` |
+| `Keycase::SnakeCase` | `Keycase.snake_case` | `Keycase.with_snake_case_keys` | `to_snake_case` / `with_snake_case_keys` |
+| `Keycase::ScreamingSnakeCase` | `Keycase.screaming_snake_case` | `Keycase.with_screaming_snake_case_keys` | `to_screaming_snake_case` / `with_screaming_snake_case_keys` |
+| `Keycase::KebabCase` | `Keycase.kebab_case` | `Keycase.with_kebab_case_keys` | `to_kebab_case` / `with_kebab_case_keys` |
+| `Keycase::TrainCase` | `Keycase.train_case` | `Keycase.with_train_case_keys` | `to_train_case` / `with_train_case_keys` |
 
-`String#to_*` returns a converted string. `Symbol#to_*` returns a converted symbol. Other objects respond to these methods and return themselves unchanged.
+`Keycase.camel_case` (and the other `Keycase.*` scalar methods) behave like refinement `to_*` for strings and symbols, and leave other objects unchanged.
+
+`Keycase.with_camel_case_keys` (and siblings) behave like `Hash#with_*_keys` and `Array#with_*_keys` after the matching `using`.
+
+`String#to_*` returns a converted string. `Symbol#to_*` returns a converted symbol. Other objects respond to these refinement-only methods by returning themselves unchanged.
 
 `Hash#with_*_keys` and `Array#with_*_keys` recursively convert only Hash keys.
 Arrays are traversed so hashes inside arrays are converted. Values that are not Hash or Array objects are returned unchanged.
@@ -104,7 +127,7 @@ using Keycase::SnakeCase
 
 ## Options
 
-All `with_*_keys` methods accept an options hash.
+All structure key conversion methods (`Keycase.with_*_keys`, and `Hash#with_*_keys` / `Array#with_*_keys` after `using`) accept an options hash.
 
 | Option | Default | Description |
 | --- | --- | --- |
@@ -125,7 +148,7 @@ using Keycase::CamelCase
 
 ## Errors
 
-`with_*_keys` raises Keycase-specific errors when recursive conversion cannot be completed without ambiguity or infinite traversal.
+`Keycase.with_*_keys` and refinement `with_*_keys` raise Keycase-specific errors when recursive conversion cannot be completed without ambiguity or infinite traversal.
 
 | Error | Raised when |
 | --- | --- |

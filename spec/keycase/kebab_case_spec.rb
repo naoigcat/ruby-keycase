@@ -1,96 +1,116 @@
 # frozen_string_literal: true
 
 RSpec.describe Keycase::KebabCase do
-  using described_class
-  it "convert strings" do
-    expect("a".to_kebab_case).to eq "a"
-    expect("A".to_kebab_case).to eq "a"
-    expect("1".to_kebab_case).to eq "1"
-    expect("a1".to_kebab_case).to eq "a1"
-    expect("A1".to_kebab_case).to eq "a1"
-    expect("case".to_kebab_case).to eq "case"
-    expect("Case".to_kebab_case).to eq "case"
-    expect("CASE".to_kebab_case).to eq "case"
-    expect("Some words".to_kebab_case).to eq "some-words"
-    expect("Some Words".to_kebab_case).to eq "some-words"
-    expect("some-words".to_kebab_case).to eq "some-words"
-    expect("some--words_".to_kebab_case).to eq "some-words"
-    expect("SOME_WORDS".to_kebab_case).to eq "some-words"
-    expect("SOME__WORDS_".to_kebab_case).to eq "some-words"
-    expect("Some:words;".to_kebab_case).to eq "some-words"
-    expect("Some,words.".to_kebab_case).to eq "some-words"
-    expect("[Some|words]".to_kebab_case).to eq "some-words"
-    expect("someWords".to_kebab_case).to eq "some-words"
-    expect("SomeWords".to_kebab_case).to eq "some-words"
-    expect("HTML Generator".to_kebab_case).to eq "html-generator"
-    expect("HTTPResponseCode".to_kebab_case).to eq "http-response-code"
-    expect("DB2Connector".to_kebab_case).to eq "db2-connector"
-    expect("w3cMarkupValidation".to_kebab_case).to eq "w3c-markup-validation"
-    expect("Some-Words".to_kebab_case).to eq "some-words"
-    expect("Content-Type".to_kebab_case).to eq "content-type"
-    expect("HTTP-Response-Code".to_kebab_case).to eq "http-response-code"
-    expect("Html-Generator".to_kebab_case).to eq "html-generator"
-    expect("Db2-Connector".to_kebab_case).to eq "db2-connector"
-    expect("W3c-Markup-Validation".to_kebab_case).to eq "w3c-markup-validation"
+  describe "module functions on Keycase (no refinement required)" do
+    it "converts scalars and nested structures" do
+      expect(Keycase.kebab_case("Some-Words")).to eq "some-words"
+      expect(Keycase.with_kebab_case_keys({ "some_key" => 1 })).to eq({ "some-key" => 1 })
+    end
   end
 
-  it "just returns numeric as is" do
-    expect(1.to_kebab_case).to eq 1
-    expect(1.1.to_kebab_case).to eq 1.1
-  end
+  describe "refinements" do
+    using described_class
 
-  it "converts symbol as string" do
-    expect(:Symbol.to_kebab_case).to eq :symbol
-    expect(:some_words.to_kebab_case).to eq :"some-words"
-    expect(:"Some-Words".to_kebab_case).to eq :"some-words"
-    expect(:"Content-Type".to_kebab_case).to eq :"content-type"
-  end
+    it "matches Keycase module functions for scalar and structure conversions" do
+      string = "Some-Words"
+      symbol = :Some_Words
+      structure = { "some-key" => { nested_key: 1 } }
 
-  it "converts hash keys" do
-    hash = {
-      :symbol_key => "symbol value",
-      "text_key" => "text value",
-      :camelKey => "camel value",
-      :PascalKey => "pascal value",
-      "Content-Type" => "gzip",
-      :"Some-Words" => "ok",
-      "HTTP-Response-Code" => 418,
-      "Nested-Train" => {
-        "Inner-Key" => 1
-      },
-      :nested_hash => {
-        :nested_symbol_key => "nested symbol value",
-        "nested_text_key" => "nested text value",
-        :nestedCamelKey => "nested camel value",
-        :NestedPascalKey => "nested pascal value"
-      },
-      :nested_array => [
-        { array_nested_hash_1: "nested value 1" },
-        { array_nested_hash_2: "nested value 2" }
-      ]
-    }
-    converted_hash = {
-      :"symbol-key" => "symbol value",
-      "text-key" => "text value",
-      :"camel-key" => "camel value",
-      :"pascal-key" => "pascal value",
-      "content-type" => "gzip",
-      "some-words": "ok",
-      "http-response-code" => 418,
-      "nested-train" => {
-        "inner-key" => 1
-      },
-      :"nested-hash" => {
-        :"nested-symbol-key" => "nested symbol value",
-        "nested-text-key" => "nested text value",
-        :"nested-camel-key" => "nested camel value",
-        :"nested-pascal-key" => "nested pascal value"
-      },
-      :"nested-array" => [
-        { "array-nested-hash-1": "nested value 1" },
-        { "array-nested-hash-2": "nested value 2" }
-      ]
-    }
-    expect(hash.with_kebab_case_keys).to eq converted_hash
+      expect(Keycase.kebab_case(string)).to eq string.to_kebab_case
+      expect(Keycase.kebab_case(symbol)).to eq symbol.to_kebab_case
+      expect(Keycase.with_kebab_case_keys(structure)).to eq structure.with_kebab_case_keys
+    end
+
+    it "convert strings" do
+      expect("a".to_kebab_case).to eq "a"
+      expect("A".to_kebab_case).to eq "a"
+      expect("1".to_kebab_case).to eq "1"
+      expect("a1".to_kebab_case).to eq "a1"
+      expect("A1".to_kebab_case).to eq "a1"
+      expect("case".to_kebab_case).to eq "case"
+      expect("Case".to_kebab_case).to eq "case"
+      expect("CASE".to_kebab_case).to eq "case"
+      expect("Some words".to_kebab_case).to eq "some-words"
+      expect("Some Words".to_kebab_case).to eq "some-words"
+      expect("some-words".to_kebab_case).to eq "some-words"
+      expect("some--words_".to_kebab_case).to eq "some-words"
+      expect("SOME_WORDS".to_kebab_case).to eq "some-words"
+      expect("SOME__WORDS_".to_kebab_case).to eq "some-words"
+      expect("Some:words;".to_kebab_case).to eq "some-words"
+      expect("Some,words.".to_kebab_case).to eq "some-words"
+      expect("[Some|words]".to_kebab_case).to eq "some-words"
+      expect("someWords".to_kebab_case).to eq "some-words"
+      expect("SomeWords".to_kebab_case).to eq "some-words"
+      expect("HTML Generator".to_kebab_case).to eq "html-generator"
+      expect("HTTPResponseCode".to_kebab_case).to eq "http-response-code"
+      expect("DB2Connector".to_kebab_case).to eq "db2-connector"
+      expect("w3cMarkupValidation".to_kebab_case).to eq "w3c-markup-validation"
+      expect("Some-Words".to_kebab_case).to eq "some-words"
+      expect("Content-Type".to_kebab_case).to eq "content-type"
+      expect("HTTP-Response-Code".to_kebab_case).to eq "http-response-code"
+      expect("Html-Generator".to_kebab_case).to eq "html-generator"
+      expect("Db2-Connector".to_kebab_case).to eq "db2-connector"
+      expect("W3c-Markup-Validation".to_kebab_case).to eq "w3c-markup-validation"
+    end
+
+    it "just returns numeric as is" do
+      expect(1.to_kebab_case).to eq 1
+      expect(1.1.to_kebab_case).to eq 1.1
+    end
+
+    it "converts symbol as string" do
+      expect(:Symbol.to_kebab_case).to eq :symbol
+      expect(:some_words.to_kebab_case).to eq :"some-words"
+      expect(:"Some-Words".to_kebab_case).to eq :"some-words"
+      expect(:"Content-Type".to_kebab_case).to eq :"content-type"
+    end
+
+    it "converts hash keys" do
+      hash = {
+        :symbol_key => "symbol value",
+        "text_key" => "text value",
+        :camelKey => "camel value",
+        :PascalKey => "pascal value",
+        "Content-Type" => "gzip",
+        :"Some-Words" => "ok",
+        "HTTP-Response-Code" => 418,
+        "Nested-Train" => {
+          "Inner-Key" => 1
+        },
+        :nested_hash => {
+          :nested_symbol_key => "nested symbol value",
+          "nested_text_key" => "nested text value",
+          :nestedCamelKey => "nested camel value",
+          :NestedPascalKey => "nested pascal value"
+        },
+        :nested_array => [
+          { array_nested_hash_1: "nested value 1" },
+          { array_nested_hash_2: "nested value 2" }
+        ]
+      }
+      converted_hash = {
+        :"symbol-key" => "symbol value",
+        "text-key" => "text value",
+        :"camel-key" => "camel value",
+        :"pascal-key" => "pascal value",
+        "content-type" => "gzip",
+        "some-words": "ok",
+        "http-response-code" => 418,
+        "nested-train" => {
+          "inner-key" => 1
+        },
+        :"nested-hash" => {
+          :"nested-symbol-key" => "nested symbol value",
+          "nested-text-key" => "nested text value",
+          :"nested-camel-key" => "nested camel value",
+          :"nested-pascal-key" => "nested pascal value"
+        },
+        :"nested-array" => [
+          { "array-nested-hash-1": "nested value 1" },
+          { "array-nested-hash-2": "nested value 2" }
+        ]
+      }
+      expect(hash.with_kebab_case_keys).to eq converted_hash
+    end
   end
 end
