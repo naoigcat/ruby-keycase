@@ -189,6 +189,17 @@ Keycase.with_pascal_case_keys({ "api_key" => 1 }, acronyms: abbr)
 # => { "APIKey" => 1 }
 ```
 
+### Word splitting and character sets
+
+Keycase splits names into words with `Keycase::Support::Tokenizer`, which collects runs
+of **ASCII letters and digits** (`0-9`, `A-Z`, `a-z`) and inserts boundaries at common case
+transitions (for example `userID` → `user`, `ID`). Separators such as `-` and `_` between those
+runs are not preserved as characters—only the alphanumeric pieces become words (for example
+`API-Key` → `API`, `Key`). **Characters outside that ASCII alphanumeric set—including most
+non-Latin letters—are not treated as word characters**, so mixed-script or heavily punctuated keys
+may not convert the way you expect. Normalize or pre-tokenize such keys before passing them to
+Keycase if you need different behavior.
+
 ## Errors
 
 `Keycase.with_*_keys` and refinement `with_*_keys` raise Keycase-specific errors when recursive conversion cannot be completed without ambiguity or infinite traversal.

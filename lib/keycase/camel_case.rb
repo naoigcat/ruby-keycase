@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-require "set"
-
 require_relative "support/acronyms"
-require_relative "support/transformer"
+require_relative "support/structure_keys"
 require_relative "support/tokenizer"
 
 module Keycase
@@ -30,29 +28,8 @@ module Keycase
 
     def self.convert_keys(structure, options = {})
       acronyms = options[:acronyms]
-      key_converter = proc do |key|
+      Keycase::Support::StructureKeys.transform(structure, options) do |key|
         convert(key, acronyms: acronyms)
-      end
-
-      case structure
-      when Hash
-        Keycase::Support::Transformer.transform_hash(
-          structure,
-          ::Set.new,
-          0,
-          options[:max_depth],
-          &key_converter
-        )
-      when Array
-        Keycase::Support::Transformer.transform_array(
-          structure,
-          ::Set.new,
-          0,
-          options[:max_depth],
-          &key_converter
-        )
-      else
-        structure
       end
     end
 
