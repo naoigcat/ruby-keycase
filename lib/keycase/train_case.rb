@@ -2,28 +2,32 @@
 
 require "set"
 
+require_relative "support/acronyms"
 require_relative "support/transformer"
 require_relative "support/tokenizer"
 
 module Keycase
   module TrainCase
-    def self.convert_string(str)
-      Keycase::Support::Tokenizer.words(str).map do |word|
-        word.capitalize
+    def self.convert_string(str, acronyms: nil)
+      words = Keycase::Support::Tokenizer.words(str)
+      acronyms_by_downcase = Keycase::Support::Acronyms.index(acronyms)
+      words.map do |word|
+        Keycase::Support::Acronyms.segment(word, acronyms_by_downcase)
       end.join("-")
     end
 
-    def self.convert(value)
+    def self.convert(value, acronyms: nil)
       case value
-      when String then convert_string(value)
-      when Symbol then convert_string(value.to_s).to_sym
+      when String then convert_string(value, acronyms: acronyms)
+      when Symbol then convert_string(value.to_s, acronyms: acronyms).to_sym
       else value
       end
     end
 
     def self.convert_keys(structure, options = {})
+      acronyms = options[:acronyms]
       key_converter = proc do |key|
-        convert(key)
+        convert(key, acronyms: acronyms)
       end
 
       case structure
@@ -49,24 +53,24 @@ module Keycase
     end
 
     refine Object do
-      def to_train_case
+      def to_train_case(**_keycase)
         self
       end
 
-      def with_train_case_keys(_options = {})
+      def with_train_case_keys(**_keycase)
         self
       end
     end
 
     refine String do
-      def to_train_case
-        Keycase::TrainCase.convert_string(self)
+      def to_train_case(acronyms: nil)
+        Keycase::TrainCase.convert_string(self, acronyms: acronyms)
       end
     end
 
     refine Symbol do
-      def to_train_case
-        Keycase::TrainCase.convert(self)
+      def to_train_case(acronyms: nil)
+        Keycase::TrainCase.convert(self, acronyms: acronyms)
       end
     end
 
@@ -84,8 +88,8 @@ module Keycase
   end
 
   class << self
-    def train_case(value)
-      TrainCase.convert(value)
+    def train_case(value, acronyms: nil)
+      TrainCase.convert(value, acronyms: acronyms)
     end
 
     def with_train_case_keys(value, options = {})

@@ -32,8 +32,17 @@ Keycase.camel_case("user_id")          # => "userId"
 Keycase.camel_case(:user_id)          # => :userId
 Keycase.camel_case(42)                 # => 42
 
+Keycase.camel_case("APIResponse", acronyms: %w[API HTTP ID])
+# => "APIResponse"
+
 Keycase.with_camel_case_keys({ "user_id" => 1, nested: { "item_count" => 2 } })
 # => { "userId" => 1, :nested => { "itemCount" => 2 } }
+
+Keycase.with_camel_case_keys(
+  { "API-Key" => 1, nested: { "http_status" => 200 } },
+  acronyms: %w[API HTTP],
+)
+# => { "APIKey" => 1, :nested => { "httpStatus" => 200 } }
 ```
 
 See [Interface](#interface) for the full list of `Keycase.*` methods and their refinement equivalents.
@@ -98,6 +107,8 @@ Keycase offers **module functions** on `Keycase` (no `using` required) and the s
 
 `Keycase.camel_case` (and the other `Keycase.*` scalar methods) behave like refinement `to_*` for strings and symbols, and leave other objects unchanged.
 
+For **camelCase**, **PascalCase**, and **Train-Case** you can pass [`acronyms`](#acronyms-initialisms) so tokens such as `API`, `HTTP`, or `ID` keep the spelling you configure instead of being title-cased (for example `Api`, `Http`). Other case styles are unchanged by this option.
+
 `Keycase.with_camel_case_keys` (and siblings) behave like `Hash#with_*_keys` and `Array#with_*_keys` after the matching `using`.
 
 `String#to_*` returns a converted string. `Symbol#to_*` returns a converted symbol. Other objects respond to these refinement-only methods by returning themselves unchanged.
@@ -132,6 +143,7 @@ All structure key conversion methods (`Keycase.with_*_keys`, and `Hash#with_*_ke
 | Option | Default | Description |
 | --- | --- | --- |
 | `max_depth` | `nil` | Maximum nested Hash/Array depth to traverse. `nil` means no depth limit. |
+| `acronyms` | `nil` | For **camelCase**, **PascalCase**, and **Train-Case** key conversion only: list of strings treated as initialisms. See [Acronyms](#acronyms-initialisms). |
 
 Depth starts at `0` for the receiver itself. Each nested Hash or Array increases
 the depth by `1`. Leaf values are not counted.
@@ -144,6 +156,37 @@ using Keycase::CamelCase
 
 { user: { profile_data: { display_name: "Alice" } } }.with_camel_case_keys(max_depth: 1)
 # raises Keycase::StructureTooDeepError
+```
+
+### Acronyms (initialisms)
+
+Use `acronyms` when you want multi-letter abbreviations to stay as you spell them (for example `API` instead of `Api`) after splitting a name into words.
+
+Where it applies:
+
+-   `Keycase.camel_case`, `Keycase.pascal_case`, `Keycase.train_case` (and refinement `String#to_*` / `Symbol#to_*` for those modules) accept a keyword: `acronyms:`.
+-   `Keycase.with_camel_case_keys`, `Keycase.with_pascal_case_keys`, and `Keycase.with_train_case_keys` (and the matching `with_*_keys` refinements) accept `acronyms:` in their **options hash** alongside `max_depth`.
+
+Pass an array of strings. Matching is **case-insensitive** per word; the output uses the string from the array (the last occurrence wins if the same word appears twice with different casing). `nil` or omitting the option keeps the previous behavior.
+
+**camelCase** lowercases the first character of the full name only when the **first** word is *not* one of the configured acronyms. That way `APIResponse` can stay `APIResponse`, while `myHTTPConnection` becomes `myHTTPConnection`.
+
+**PascalCase** and **Train-Case** replace each matching word with the acronym spelling and title-Case other words as before.
+
+snake_case, SCREAMING_SNAKE, and kebab_case do not use `acronyms`; they still normalize segments with `downcase` / `upcase` as usual.
+
+```rb
+abbr = %w[API HTTP ID]
+
+Keycase.camel_case("APIResponse", acronyms: abbr)           # => "APIResponse"
+Keycase.pascal_case("HTTPResponseCode", acronyms: abbr)      # => "HTTPResponseCode"
+Keycase.train_case("HTTP-Response-Code", acronyms: abbr)    # => "HTTP-Response-Code"
+
+using Keycase::CamelCase
+"userID".to_camel_case(acronyms: abbr)                      # => "userID"
+
+Keycase.with_pascal_case_keys({ "api_key" => 1 }, acronyms: abbr)
+# => { "APIKey" => 1 }
 ```
 
 ## Errors

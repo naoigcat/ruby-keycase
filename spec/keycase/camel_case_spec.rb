@@ -9,6 +9,16 @@ RSpec.describe Keycase::CamelCase do
         { "someKey" => { nestedKey: 1 } }
       )
     end
+
+    it "honors acronyms for camelCase when given" do
+      acronyms = %w[API HTTP ID]
+      expect(Keycase.camel_case("APIResponse", acronyms: acronyms)).to eq "APIResponse"
+      expect(Keycase.camel_case("HTTPResponseCode", acronyms: acronyms)).to eq "HTTPResponseCode"
+      expect(Keycase.camel_case("userID", acronyms: acronyms)).to eq "userID"
+      expect(
+        Keycase.with_camel_case_keys({ "API-Key" => 1 }, acronyms: acronyms)
+      ).to eq({ "APIKey" => 1 })
+    end
   end
 
   describe "refinements" do
@@ -118,6 +128,13 @@ RSpec.describe Keycase::CamelCase do
         ]
       }
       expect(hash.with_camel_case_keys).to eq converted_hash
+    end
+
+    it "honors acronyms when converting strings" do
+      acronyms = %w[API HTTP ID]
+      expect("APIResponse".to_camel_case(acronyms: acronyms)).to eq "APIResponse"
+      expect("myHTTPConnection".to_camel_case(acronyms: acronyms)).to eq "myHTTPConnection"
+      expect("User-ID-Value".to_camel_case(acronyms: acronyms)).to eq "userIDValue"
     end
   end
 end

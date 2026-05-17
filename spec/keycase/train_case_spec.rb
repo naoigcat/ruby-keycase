@@ -6,6 +6,14 @@ RSpec.describe Keycase::TrainCase do
       expect(Keycase.train_case("Some-Words")).to eq "Some-Words"
       expect(Keycase.with_train_case_keys({ "some_key" => 1 })).to eq({ "Some-Key" => 1 })
     end
+
+    it "honors acronyms for Train-Case when given" do
+      acronyms = %w[API HTTP]
+      expect(Keycase.train_case("HTTPResponseCode", acronyms: acronyms)).to eq "HTTP-Response-Code"
+      expect(
+        Keycase.with_train_case_keys({ "API-Key" => 1 }, acronyms: acronyms)
+      ).to eq({ "API-Key" => 1 })
+    end
   end
 
   describe "refinements" do

@@ -8,6 +8,16 @@ RSpec.describe Keycase::PascalCase do
         { "SomeKey" => { NestedKey: 1 } }
       )
     end
+
+    it "honors acronyms for PascalCase when given" do
+      acronyms = %w[API HTTP ID]
+      expect(Keycase.pascal_case("APIResponse", acronyms: acronyms)).to eq "APIResponse"
+      expect(Keycase.pascal_case("HTTPResponseCode", acronyms: acronyms)).to eq "HTTPResponseCode"
+      expect(Keycase.pascal_case("userID", acronyms: acronyms)).to eq "UserID"
+      expect(
+        Keycase.with_pascal_case_keys({ "API-Key" => 1 }, acronyms: acronyms)
+      ).to eq({ "APIKey" => 1 })
+    end
   end
 
   describe "refinements" do
@@ -113,6 +123,12 @@ RSpec.describe Keycase::PascalCase do
         ]
       }
       expect(hash.with_pascal_case_keys).to eq converted_hash
+    end
+
+    it "honors acronyms when converting strings" do
+      acronyms = %w[API HTTP ID]
+      expect("APIResponse".to_pascal_case(acronyms: acronyms)).to eq "APIResponse"
+      expect("myHTTPConnection".to_pascal_case(acronyms: acronyms)).to eq "MyHTTPConnection"
     end
   end
 end
