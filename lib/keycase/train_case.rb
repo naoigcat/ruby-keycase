@@ -30,11 +30,11 @@ module Keycase
     end
 
     refine Object do
-      def to_train_case(**_keycase)
+      def to_train_case(options = {})
         self
       end
 
-      def with_train_case_keys(**_keycase)
+      def with_train_case_keys(options = {})
         self
       end
     end

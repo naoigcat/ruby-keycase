@@ -26,11 +26,11 @@ module Keycase
     end
 
     refine Object do
-      def to_kebab_case(**_keycase)
+      def to_kebab_case(options = {})
         self
       end
 
-      def with_kebab_case_keys(**_keycase)
+      def with_kebab_case_keys(options = {})
         self
       end
     end

@@ -34,11 +34,11 @@ module Keycase
     end
 
     refine Object do
-      def to_camel_case(**_keycase)
+      def to_camel_case(options = {})
         self
       end
 
-      def with_camel_case_keys(**_keycase)
+      def with_camel_case_keys(options = {})
         self
       end
     end

@@ -26,11 +26,11 @@ module Keycase
     end
 
     refine Object do
-      def to_snake_case(**_keycase)
+      def to_snake_case(options = {})
         self
       end
 
-      def with_snake_case_keys(**_keycase)
+      def with_snake_case_keys(options = {})
         self
       end
     end
