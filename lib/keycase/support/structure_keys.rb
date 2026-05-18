@@ -16,7 +16,7 @@ module Keycase
             structure,
             ::Set.new,
             0,
-            options[:max_depth],
+            options,
             &key_converter
           )
         when Array
@@ -24,7 +24,7 @@ module Keycase
             structure,
             ::Set.new,
             0,
-            options[:max_depth],
+            options,
             &key_converter
           )
         else

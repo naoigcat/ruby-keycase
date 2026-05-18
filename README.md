@@ -143,6 +143,7 @@ All structure key conversion methods (`Keycase.with_*_keys`, and `Hash#with_*_ke
 | Option | Default | Description |
 | --- | --- | --- |
 | `max_depth` | `nil` | Maximum nested Hash/Array depth to traverse. `nil` means no depth limit. |
+| `on_collision` | `:raise` | How to handle multiple source keys that convert to the same destination key in one Hash. See [Key collisions (`on_collision`)](#key-collisions-on_collision). |
 | `acronyms` | `nil` | For **camelCase**, **PascalCase**, and **Train-Case** key conversion only: list of strings treated as initialisms. See [Acronyms](#acronyms-initialisms). |
 
 Depth starts at `0` for the receiver itself. Each nested Hash or Array increases
@@ -158,6 +159,36 @@ using Keycase::CamelCase
 # raises Keycase::StructureTooDeepError
 ```
 
+### Key collisions (`on_collision`)
+
+By default, if two keys in the same Hash map to the same key after conversion, Keycase raises `Keycase::KeyCollisionError` so data is never dropped without you noticing. For migrations or log shaping you can pick another strategy:
+
+| `on_collision` | Behavior |
+| --- | --- |
+| `:raise` | **Default.** Raise `Keycase::KeyCollisionError`. |
+| `:overwrite` | Keep the **last** entry in Ruby Hash iteration order (insertion order) for that destination key. |
+| `:keep_first` | Keep the **first** entry; later colliding keys are ignored (their values are not traversed). |
+
+Unknown values raise `ArgumentError`. The option applies **per Hash** at each nesting level.
+
+```rb
+using Keycase::CamelCase
+
+h = { :user_id => 1, :userID => 2 }
+
+h.with_camel_case_keys
+# raises Keycase::KeyCollisionError
+
+h.with_camel_case_keys(on_collision: :overwrite)
+# => { :userId => 2 }
+
+h.with_camel_case_keys(on_collision: :keep_first)
+# => { :userId => 1 }
+
+Keycase.with_snake_case_keys({ "SomeKey" => 1, someKey: 2 }, on_collision: :keep_first)
+# => { "some_key" => 1 }
+```
+
 ### Acronyms (initialisms)
 
 Use `acronyms` when you want multi-letter abbreviations to stay as you spell them (for example `API` instead of `Api`) after splitting a name into words.
@@ -165,7 +196,7 @@ Use `acronyms` when you want multi-letter abbreviations to stay as you spell the
 Where it applies:
 
 -   `Keycase.camel_case`, `Keycase.pascal_case`, `Keycase.train_case` (and refinement `String#to_*` / `Symbol#to_*` for those modules) accept a keyword: `acronyms:`.
--   `Keycase.with_camel_case_keys`, `Keycase.with_pascal_case_keys`, and `Keycase.with_train_case_keys` (and the matching `with_*_keys` refinements) accept `acronyms:` in their **options hash** alongside `max_depth`.
+-   `Keycase.with_camel_case_keys`, `Keycase.with_pascal_case_keys`, and `Keycase.with_train_case_keys` (and the matching `with_*_keys` refinements) accept `acronyms:` in their **options hash** alongside `max_depth` and `on_collision`.
 
 Pass an array of strings. Matching is **case-insensitive** per word; the output uses the string from the array (the last occurrence wins if the same word appears twice with different casing). `nil` or omitting the option keeps the previous behavior.
 
@@ -202,7 +233,7 @@ Keycase if you need different behavior.
 
 `Keycase::Support::Tokenizer.words` keeps that ASCII alphanumeric focus by design: multilingual **Rails `I18n`** key paths often rely on
 Unicode letters or nuanced punctuation that disappear from tokens, which can confuse case
-conversion—or make separate keys collide after conversion (**`KeyCollisionError`**) when you
+conversion—or make separate keys collide after conversion (**`KeyCollisionError`** by default, or use [`on_collision`](#key-collisions-on_collision) to overwrite or keep the first key) when you
 bulk-convert hashes.
 
 ## Errors
@@ -212,7 +243,7 @@ bulk-convert hashes.
 | Error | Raised when |
 | --- | --- |
 | `Keycase::CircularStructureError` | A Hash or Array references itself through the current traversal path. |
-| `Keycase::KeyCollisionError` | Multiple source keys in the same Hash convert to the same destination key. |
+| `Keycase::KeyCollisionError` | Multiple source keys in the same Hash convert to the same destination key and `on_collision` is `:raise` (the default). |
 | `Keycase::StructureTooDeepError` | Traversal exceeds the supplied `max_depth`. |
 
 Circular references are rejected because recursive conversion could not finish.
@@ -227,14 +258,7 @@ hash.with_camel_case_keys
 # raises Keycase::CircularStructureError
 ```
 
-Key collisions are rejected so conversion never silently overwrites data. The check is performed per Hash after the keys are converted.
-
-```rb
-using Keycase::CamelCase
-
-{ :user_id => 1, :userID => 2 }.with_camel_case_keys
-# raises Keycase::KeyCollisionError
-```
+`Keycase::KeyCollisionError` is documented with examples under [Key collisions (`on_collision`)](#key-collisions-on_collision).
 
 ## Development
 

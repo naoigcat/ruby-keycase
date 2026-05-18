@@ -42,5 +42,19 @@ RSpec.describe Keycase::Support::Transformer do
       hash = { foo_bar: 1, fooBar: 2 }
       expect { hash.with_camel_case_keys }.to raise_error(Keycase::KeyCollisionError)
     end
+
+    it "accepts on_collision: :overwrite (last key wins)" do
+      hash = { foo_bar: 1, fooBar: 2 }
+      expect(hash.with_camel_case_keys(on_collision: :overwrite)).to eq({ fooBar: 2 })
+    end
+
+    it "accepts on_collision: :keep_first (first key wins)" do
+      hash = { foo_bar: 1, fooBar: 2 }
+      expect(hash.with_camel_case_keys(on_collision: :keep_first)).to eq({ fooBar: 1 })
+    end
+
+    it "rejects unknown on_collision values" do
+      expect { { a: 1 }.with_camel_case_keys(on_collision: :merge) }.to raise_error(ArgumentError, /on_collision/)
+    end
   end
 end
