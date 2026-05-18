@@ -57,4 +57,61 @@ RSpec.describe Keycase::Support::Transformer do
       expect { { a: 1 }.with_camel_case_keys(on_collision: :merge) }.to raise_error(ArgumentError, /on_collision/)
     end
   end
+
+  describe "recursive" do
+    it "does not transform Hash keys nested under another Hash when recursive is false" do
+      input = { outer_key: { inner_key: 1 } }
+      expect(input.with_camel_case_keys(recursive: false)).to eq({ outerKey: { inner_key: 1 } })
+    end
+
+    it "still transforms Hash keys that are direct elements of an Array when recursive is false" do
+      input = { items: [{ nested_key: 1 }] }
+      expect(input.with_camel_case_keys(recursive: false)).to eq({ items: [{ nestedKey: 1 }] })
+    end
+
+    it "rejects non-boolean recursive values" do
+      expect { {}.with_camel_case_keys(recursive: :no) }.to raise_error(ArgumentError, /recursive/)
+    end
+  end
+
+  describe "arrays" do
+    it "does not traverse Array elements when arrays is false" do
+      input = { items: [{ nested_key: 1 }] }
+      expect(input.with_camel_case_keys(arrays: false)).to eq({ items: [{ nested_key: 1 }] })
+    end
+
+    it "rejects non-boolean arrays values" do
+      expect { {}.with_camel_case_keys(arrays: "false") }.to raise_error(ArgumentError, /arrays/)
+    end
+  end
+
+  describe "only" do
+    it "converts only String keys when only includes :string" do
+      input = { "foo_bar" => 1, baz_qux: 2 }
+      expect(input.with_camel_case_keys(only: [:string])).to eq({ "fooBar" => 1, baz_qux: 2 })
+    end
+
+    it "converts only Symbol keys when only includes :symbol" do
+      input = { "foo_bar" => 1, baz_qux: 2 }
+      expect(input.with_camel_case_keys(only: [:symbol])).to eq({ "foo_bar" => 1, bazQux: 2 })
+    end
+
+    it "accepts String and Symbol classes in only" do
+      input = { "a_b" => 1, c_d: 2 }
+      expect(input.with_camel_case_keys(only: [String, Symbol])).to eq({ "aB" => 1, cD: 2 })
+    end
+
+    it "converts no keys when only is empty" do
+      input = { foo_bar: 1, "biz_baz" => 2 }
+      expect(input.with_camel_case_keys(only: [])).to eq(input)
+    end
+
+    it "rejects unsupported only entries" do
+      expect { { a: 1 }.with_camel_case_keys(only: [:integer]) }.to raise_error(ArgumentError, /only/)
+    end
+
+    it "rejects non-Array only" do
+      expect { { a: 1 }.with_camel_case_keys(only: :string) }.to raise_error(ArgumentError, /only/)
+    end
+  end
 end

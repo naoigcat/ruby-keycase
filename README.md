@@ -113,9 +113,10 @@ For **camelCase**, **PascalCase**, and **Train-Case** you can pass [`acronyms`](
 
 `String#to_*` returns a converted string. `Symbol#to_*` returns a converted symbol. Other objects respond to these refinement-only methods by returning themselves unchanged.
 
-`Hash#with_*_keys` and `Array#with_*_keys` recursively convert only Hash keys.
+`Hash#with_*_keys` and `Array#with_*_keys` recursively convert Hash keys by default.
 Arrays are traversed so hashes inside arrays are converted. Values that are not Hash or Array objects are returned unchanged.
 Key type is preserved: string keys remain strings, and symbol keys remain symbols.
+Optional [`recursive`](#traversal-scope-recursive-arrays), [`arrays`](#traversal-scope-recursive-arrays), and [`only`](#key-types-only) narrow **what** is traversed and **which** keys are converted.
 
 ```rb
 using Keycase::SnakeCase
@@ -144,6 +145,9 @@ All structure key conversion methods (`Keycase.with_*_keys`, and `Hash#with_*_ke
 | --- | --- | --- |
 | `max_depth` | `nil` | Maximum nested Hash/Array depth to traverse. `nil` means no depth limit. |
 | `on_collision` | `:raise` | How to handle multiple source keys that convert to the same destination key in one Hash. See [Key collisions (`on_collision`)](#key-collisions-on_collision). |
+| `recursive` | `true` | When `false`, hashes nested **under another hash** are not converted (see [Traversal scope](#traversal-scope-recursive-arrays)). |
+| `arrays` | `true` | When `false`, array elements are not traversed (see [Traversal scope](#traversal-scope-recursive-arrays)). |
+| `only` | `nil` | Restrict conversion to certain key types (`:string`, `:symbol`, or `String` / `Symbol`). See [Key types (`only`)](#key-types-only). |
 | `acronyms` | `nil` | For **camelCase**, **PascalCase**, and **Train-Case** key conversion only: list of strings treated as initialisms. See [Acronyms](#acronyms-initialisms). |
 
 Depth starts at `0` for the receiver itself. Each nested Hash or Array increases
@@ -158,6 +162,58 @@ using Keycase::CamelCase
 { user: { profile_data: { display_name: "Alice" } } }.with_camel_case_keys(max_depth: 1)
 # raises Keycase::StructureTooDeepError
 ```
+
+### Traversal scope (`recursive`, `arrays`)
+
+Use these when you want shallow conversion (for example only the outer hash or skipping arrays) without relying on `max_depth` alone.
+
+-   **`recursive`:** With `false`, **only hashes nested as values of another hash** are left untouched—same object as in the input for those inner hashes. Hashes that appear **as array elements** are still converted by default, because their parent is an Array, not a Hash.
+
+    ```rb
+    using Keycase::CamelCase
+
+    { outer_key: { inner_key: 1 } }.with_camel_case_keys(recursive: false)
+    # => { :outerKey => { :inner_key => 1 } }
+
+    { items: [{ nested_key: 1 }] }.with_camel_case_keys(recursive: false)
+    # => { :items => [{ :nestedKey => 1 }] }
+    ```
+
+-   **`arrays`:** With `false`, arrays are not walked: elements stay as-is inside a new outer Array.
+
+    ```rb
+    { items: [{ nested_key: 1 }] }.with_camel_case_keys(arrays: false)
+    # => { :items => [{ :nested_key => 1 }] }
+    ```
+
+Combine both for “top-level hash keys only” when values include nested hashes and arrays you do not want to reshape:
+
+```rb
+payload = { user_profile: { display_name: "Ada" }, tags: [{ tag_name: "ruby" }] }
+
+payload.with_camel_case_keys(recursive: false, arrays: false)
+# => { :userProfile => { :display_name => "Ada" }, :tags => [{ :tag_name => "ruby" }] }
+```
+
+`recursive` and `arrays` must be exactly `true` or `false`; other values raise `ArgumentError`.
+
+### Key types (`only`)
+
+Pass `only:` as an array of `:string`, `:symbol`, and/or the classes `String` and `Symbol`. Only matching keys are passed through the case converter; other keys stay unchanged (same object).
+
+Omit the option or pass `nil` for the usual behavior (string and symbol keys are converted). An **empty array** converts **no** keys.
+
+```rb
+using Keycase::CamelCase
+
+{ "foo_bar" => 1, baz_qux: 2 }.with_camel_case_keys(only: [:string])
+# => { "fooBar" => 1, :baz_qux => 2 }
+
+{ "foo_bar" => 1, baz_qux: 2 }.with_camel_case_keys(only: [:symbol])
+# => { "foo_bar" => 1, :bazQux => 2 }
+```
+
+Unsupported entries or a non-Array `only:` raise `ArgumentError`.
 
 ### Key collisions (`on_collision`)
 
@@ -196,7 +252,7 @@ Use `acronyms` when you want multi-letter abbreviations to stay as you spell the
 Where it applies:
 
 -   `Keycase.camel_case`, `Keycase.pascal_case`, `Keycase.train_case` (and refinement `String#to_*` / `Symbol#to_*` for those modules) accept a keyword: `acronyms:`.
--   `Keycase.with_camel_case_keys`, `Keycase.with_pascal_case_keys`, and `Keycase.with_train_case_keys` (and the matching `with_*_keys` refinements) accept `acronyms:` in their **options hash** alongside `max_depth` and `on_collision`.
+-   `Keycase.with_camel_case_keys`, `Keycase.with_pascal_case_keys`, and `Keycase.with_train_case_keys` (and the matching `with_*_keys` refinements) accept `acronyms:` in their **options hash** alongside `max_depth`, `on_collision`, `recursive`, `arrays`, and `only`.
 
 Pass an array of strings. Matching is **case-insensitive** per word; the output uses the string from the array (the last occurrence wins if the same word appears twice with different casing). `nil` or omitting the option keeps the previous behavior.
 

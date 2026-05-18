@@ -10,23 +10,15 @@ module Keycase
       module_function
 
       def transform(structure, options = {}, &key_converter)
+        opts = Transformer.enrich_options(options)
+
         case structure
         when Hash
-          Transformer.transform_hash(
-            structure,
-            ::Set.new,
-            0,
-            options,
-            &key_converter
-          )
+          state = Transformer::State.new(::Set.new, 0, opts, :none)
+          Transformer.transform_hash(structure, state, &key_converter)
         when Array
-          Transformer.transform_array(
-            structure,
-            ::Set.new,
-            0,
-            options,
-            &key_converter
-          )
+          state = Transformer::State.new(::Set.new, 0, opts, :none)
+          Transformer.transform_array(structure, state, &key_converter)
         else
           structure
         end
