@@ -200,6 +200,11 @@ non-Latin letters—are not treated as word characters**, so mixed-script or hea
 may not convert the way you expect. Normalize or pre-tokenize such keys before passing them to
 Keycase if you need different behavior.
 
+`Keycase::Support::Tokenizer.words` keeps that ASCII alphanumeric focus by design: multilingual **Rails `I18n`** key paths often rely on
+Unicode letters or nuanced punctuation that disappear from tokens, which can confuse case
+conversion—or make separate keys collide after conversion (**`KeyCollisionError`**) when you
+bulk-convert hashes.
+
 ## Errors
 
 `Keycase.with_*_keys` and refinement `with_*_keys` raise Keycase-specific errors when recursive conversion cannot be completed without ambiguity or infinite traversal.

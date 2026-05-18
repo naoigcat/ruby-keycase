@@ -30,11 +30,11 @@ module Keycase
     end
 
     refine Object do
-      def to_pascal_case(options = {})
+      def to_pascal_case(_options = {})
         self
       end
 
-      def with_pascal_case_keys(options = {})
+      def with_pascal_case_keys(_options = {})
         self
       end
     end

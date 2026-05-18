@@ -3,7 +3,7 @@
 # Recursively converts string/symbol case and hash keys (camelCase, snake_case, etc.).
 #
 # +Keycase+ is reopened in +lib/keycase/<case>.rb+; module functions (+Keycase.camel_case+ and
-# friends) and refinement modules (+Keycase::CamelCase+, …) live in those files, not here.
+# friends) and refinement modules (+Keycase::CamelCase+, ...) live in those files, not here.
 #
 # Call module functions on +Keycase+ when +using Keycase::CamelCase+ (or another case module)
 # is impractical, such as in a Rails initializer, another gem, or shared code. Refinements remain

@@ -6,9 +6,7 @@ require_relative "support/tokenizer"
 module Keycase
   module SnakeCase
     def self.convert_string(str)
-      Keycase::Support::Tokenizer.words(str).map do |word|
-        word.downcase
-      end.join("_")
+      Keycase::Support::Tokenizer.words(str).map(&:downcase).join("_")
     end
 
     def self.convert(value)
@@ -26,11 +24,11 @@ module Keycase
     end
 
     refine Object do
-      def to_snake_case(options = {})
+      def to_snake_case(_options = {})
         self
       end
 
-      def with_snake_case_keys(options = {})
+      def with_snake_case_keys(_options = {})
         self
       end
     end
