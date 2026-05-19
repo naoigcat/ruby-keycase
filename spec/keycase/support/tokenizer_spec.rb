@@ -15,5 +15,17 @@ RSpec.describe Keycase::Support::Tokenizer do
         expect(described_class.words(value)).to eq words
       end
     end
+
+    it "treats Unicode letters and digits as word characters" do
+      cases = [
+        ["ユーザー名", %w[ユーザー名]],
+        ["ユーザー-user_id", %w[ユーザー user id]],
+        ["someПеременная", %w[some Переменная]]
+      ]
+
+      cases.each do |value, words|
+        expect(described_class.words(value)).to eq words
+      end
+    end
   end
 end

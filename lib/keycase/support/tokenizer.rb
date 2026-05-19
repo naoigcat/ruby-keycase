@@ -7,13 +7,9 @@ module Keycase
 
       def words(value)
         value
-          .gsub(/(?<=[A-Z])(?=[A-Z][a-z])/) do |_|
-            "_"
-          end
-          .gsub(/(?<=[0-9a-z])(?=[A-Z])/) do |_|
-            "_"
-          end
-          .scan(/[0-9A-Za-z]+/)
+          .gsub(/(?<=\p{Lu})(?=\p{Lu}\p{Ll})/, "_")
+          .gsub(/(?<=[\p{Ll}\p{Nd}])(?=\p{Lu})/, "_")
+          .scan(/[\p{L}\p{N}]+/)
       end
     end
   end

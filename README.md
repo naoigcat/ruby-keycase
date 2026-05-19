@@ -278,19 +278,23 @@ Keycase.with_pascal_case_keys({ "api_key" => 1 }, acronyms: abbr)
 
 ### Word splitting and character sets
 
-Keycase splits names into words with `Keycase::Support::Tokenizer`, which collects runs
-of **ASCII letters and digits** (`0-9`, `A-Z`, `a-z`) and inserts boundaries at common case
-transitions (for example `userID` → `user`, `ID`). Separators such as `-` and `_` between those
-runs are not preserved as characters—only the alphanumeric pieces become words (for example
-`API-Key` → `API`, `Key`). **Characters outside that ASCII alphanumeric set—including most
-non-Latin letters—are not treated as word characters**, so mixed-script or heavily punctuated keys
-may not convert the way you expect. Normalize or pre-tokenize such keys before passing them to
-Keycase if you need different behavior.
+Keycase splits names into words with `Keycase::Support::Tokenizer`, which collects runs of
+**Unicode letters and numbers** (`\p{L}`, `\p{N}`) and inserts boundaries at common case
+transitions in scripts that distinguish letter case (for example `userID` → `user`, `ID`;
+`HTTPResponse` → `HTTP`, `Response`). Separators such as `-` and `_` between those runs are not
+preserved as characters—only the letter and number pieces become words (for example
+`API-Key` → `API`, `Key`; `ユーザー-user_id` → `ユーザー`, `user`, `id`).
 
-`Keycase::Support::Tokenizer.words` keeps that ASCII alphanumeric focus by design: multilingual **Rails `I18n`** key paths often rely on
-Unicode letters or nuanced punctuation that disappear from tokens, which can confuse case
-conversion—or make separate keys collide after conversion (**`KeyCollisionError`** by default, or use [`on_collision`](#key-collisions-on_collision) to overwrite or keep the first key) when you
-bulk-convert hashes.
+**Characters outside `\p{L}` and `\p{N}`**—punctuation, symbols, emoji, and most whitespace—act as
+separators and are not included in tokens. Scripts without cased letters (for example CJK) form a
+single letter run unless you separate them with `-`, `_`, or similar. Mixed-script keys glued
+without separators (for example Latin camelCase next to CJK text) are not split at the script
+boundary.
+
+Multilingual **Rails `I18n`** key paths that rely on punctuation or non-alphanumeric characters can
+still behave unexpectedly after conversion, or make separate keys collide after conversion
+(**`KeyCollisionError`** by default, or use [`on_collision`](#key-collisions-on_collision) to
+overwrite or keep the first key) when you bulk-convert hashes.
 
 ## Errors
 

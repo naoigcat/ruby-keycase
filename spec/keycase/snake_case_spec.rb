@@ -53,6 +53,7 @@ RSpec.describe Keycase::SnakeCase do
       expect("Html-Generator".to_snake_case).to eq "html_generator"
       expect("Db2-Connector".to_snake_case).to eq "db2_connector"
       expect("W3c-Markup-Validation".to_snake_case).to eq "w3c_markup_validation"
+      expect("ユーザー-userID".to_snake_case).to eq "ユーザー_user_id"
     end
 
     it "just returns numeric as is" do
