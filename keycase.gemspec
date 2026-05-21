@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary                = "Converts the case of strings, symbols, and keys of hash."
   spec.description            = <<-DESCRIPTION
     This gem converts the case of strings, symbols, and keys of hash recursively.
-    The convertible cases are camelCase, PascalCase, snake_case, etc.
+    The convertible cases are camelCase, snake_case, kebab-case.
   DESCRIPTION
   spec.homepage               = "https://github.com/naoigcat/ruby-keycase"
   spec.license                = "MIT"

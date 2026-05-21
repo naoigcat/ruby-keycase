@@ -6,6 +6,18 @@ RSpec.describe Keycase::KebabCase do
       expect(Keycase.kebab_case("Some-Words")).to eq "some-words"
       expect(Keycase.with_kebab_case_keys({ "some_key" => 1 })).to eq({ "some-key" => 1 })
     end
+
+    it "converts to Train-Case with capitalize option" do
+      acronyms = %w[API HTTP]
+      expect(Keycase.kebab_case("Some-Words", capitalize: true)).to eq "Some-Words"
+      expect(Keycase.kebab_case(:some_words, capitalize: true)).to eq :"Some-Words"
+      expect(Keycase.kebab_case("HTTPResponseCode", acronyms: acronyms, capitalize: true)).to eq(
+        "HTTP-Response-Code"
+      )
+      expect(
+        Keycase.with_kebab_case_keys({ "API-Key" => 1 }, acronyms: acronyms, capitalize: true)
+      ).to eq({ "API-Key" => 1 })
+    end
   end
 
   describe "refinements" do
@@ -111,6 +123,16 @@ RSpec.describe Keycase::KebabCase do
         ]
       }
       expect(hash.with_kebab_case_keys).to eq converted_hash
+    end
+
+    it "converts to Train-Case when capitalize option is true" do
+      acronyms = %w[API HTTP]
+      expect("HTTPResponseCode".to_kebab_case(capitalize: true)).to eq "Http-Response-Code"
+      expect("HTTPResponseCode".to_kebab_case(acronyms: acronyms, capitalize: true)).to eq(
+        "HTTP-Response-Code"
+      )
+      expect(:some_words.to_kebab_case(capitalize: true)).to eq :"Some-Words"
+      expect({ nested_key: 1 }.with_kebab_case_keys(capitalize: true)).to eq({ "Nested-Key": 1 })
     end
   end
 end

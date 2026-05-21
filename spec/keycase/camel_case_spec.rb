@@ -19,6 +19,16 @@ RSpec.describe Keycase::CamelCase do
         Keycase.with_camel_case_keys({ "API-Key" => 1 }, acronyms: acronyms)
       ).to eq({ "APIKey" => 1 })
     end
+
+    it "converts to PascalCase with capitalize option" do
+      acronyms = %w[API HTTP ID]
+      expect(Keycase.camel_case("Some-Words", capitalize: true)).to eq "SomeWords"
+      expect(Keycase.camel_case(:some_words, capitalize: true)).to eq :SomeWords
+      expect(Keycase.camel_case("userID", acronyms: acronyms, capitalize: true)).to eq "UserID"
+      expect(
+        Keycase.with_camel_case_keys({ "api_key" => 1 }, acronyms: acronyms, capitalize: true)
+      ).to eq({ "APIKey" => 1 })
+    end
   end
 
   describe "refinements" do
@@ -135,6 +145,13 @@ RSpec.describe Keycase::CamelCase do
       expect("APIResponse".to_camel_case(acronyms: acronyms)).to eq "APIResponse"
       expect("myHTTPConnection".to_camel_case(acronyms: acronyms)).to eq "myHTTPConnection"
       expect("User-ID-Value".to_camel_case(acronyms: acronyms)).to eq "userIDValue"
+    end
+
+    it "converts to PascalCase when capitalize option is true" do
+      acronyms = %w[API HTTP ID]
+      expect("APIResponse".to_camel_case(capitalize: true)).to eq "ApiResponse"
+      expect("myHTTPConnection".to_camel_case(acronyms: acronyms, capitalize: true)).to eq "MyHTTPConnection"
+      expect(:some_words.to_camel_case(capitalize: true)).to eq :SomeWords
     end
   end
 end

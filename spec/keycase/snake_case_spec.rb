@@ -8,6 +8,12 @@ RSpec.describe Keycase::SnakeCase do
         { "some_key" => { "nested_key" => 1 } }
       )
     end
+
+    it "converts to SCREAMING_SNAKE_CASE with upcase option" do
+      expect(Keycase.snake_case("Some-Words", upcase: true)).to eq "SOME_WORDS"
+      expect(Keycase.snake_case(:some_words, upcase: true)).to eq :SOME_WORDS
+      expect(Keycase.with_snake_case_keys({ "some-key" => 1 }, upcase: true)).to eq({ "SOME_KEY" => 1 })
+    end
   end
 
   describe "refinements" do
@@ -114,6 +120,12 @@ RSpec.describe Keycase::SnakeCase do
         ]
       }
       expect(hash.with_snake_case_keys).to eq converted_hash
+    end
+
+    it "converts to SCREAMING_SNAKE_CASE when upcase option is true" do
+      expect("HTTP-Response-Code".to_snake_case(upcase: true)).to eq "HTTP_RESPONSE_CODE"
+      expect(:some_words.to_snake_case(upcase: true)).to eq :SOME_WORDS
+      expect({ nested_key: 1 }.with_snake_case_keys(upcase: true)).to eq({ NESTED_KEY: 1 })
     end
   end
 end

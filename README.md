@@ -1,7 +1,7 @@
 # Keycase
 
 This gem converts the case of strings, symbols, and keys of hash recursively.
-The convertible cases are camelCase, PascalCase, snake_case, etc.
+The convertible cases are camelCase, PascalCase, snake_case, SCREAMING_SNAKE_CASE, kebab-case, and Train-Case.
 
 ## Installation
 
@@ -34,6 +34,15 @@ Keycase.camel_case(42)                 # => 42
 
 Keycase.camel_case("APIResponse", acronyms: %w[API HTTP ID])
 # => "APIResponse"
+
+Keycase.camel_case("user_id", capitalize: true)
+# => "UserId"
+
+Keycase.snake_case("userID", upcase: true)
+# => "USER_ID"
+
+Keycase.kebab_case("user_id", capitalize: true)
+# => "User-Id"
 
 Keycase.with_camel_case_keys({ "user_id" => 1, nested: { "item_count" => 2 } })
 # => { "userId" => 1, :nested => { "itemCount" => 2 } }
@@ -99,13 +108,16 @@ Keycase offers **module functions** on `Keycase` (no `using` required) and the s
 | Refinement | `Keycase` module function (scalar) | `Keycase` module function (Hash/Array keys) | Refinement instance methods |
 | --- | --- | --- | --- |
 | `Keycase::CamelCase` | `Keycase.camel_case` | `Keycase.with_camel_case_keys` | `to_camel_case` / `with_camel_case_keys` |
-| `Keycase::PascalCase` | `Keycase.pascal_case` | `Keycase.with_pascal_case_keys` | `to_pascal_case` / `with_pascal_case_keys` |
 | `Keycase::SnakeCase` | `Keycase.snake_case` | `Keycase.with_snake_case_keys` | `to_snake_case` / `with_snake_case_keys` |
-| `Keycase::ScreamingSnakeCase` | `Keycase.screaming_snake_case` | `Keycase.with_screaming_snake_case_keys` | `to_screaming_snake_case` / `with_screaming_snake_case_keys` |
 | `Keycase::KebabCase` | `Keycase.kebab_case` | `Keycase.with_kebab_case_keys` | `to_kebab_case` / `with_kebab_case_keys` |
-| `Keycase::TrainCase` | `Keycase.train_case` | `Keycase.with_train_case_keys` | `to_train_case` / `with_train_case_keys` |
 
 `Keycase.camel_case` (and the other `Keycase.*` scalar methods) behave like refinement `to_*` for strings and symbols, and leave other objects unchanged.
+
+Use options to select the former paired case variants:
+
+-   `Keycase.camel_case(..., capitalize: true)` converts to PascalCase.
+-   `Keycase.snake_case(..., upcase: true)` converts to SCREAMING_SNAKE_CASE.
+-   `Keycase.kebab_case(..., capitalize: true)` converts to Train-Case.
 
 For **camelCase**, **PascalCase**, and **Train-Case** you can pass [`acronyms`](#acronyms-initialisms) so tokens such as `API`, `HTTP`, or `ID` keep the spelling you configure instead of being title-cased (for example `Api`, `Http`). Other case styles are unchanged by this option.
 
@@ -148,7 +160,9 @@ All structure key conversion methods (`Keycase.with_*_keys`, and `Hash#with_*_ke
 | `recursive` | `true` | When `false`, hashes nested **under another hash** are not converted (see [Traversal scope](#traversal-scope-recursive-arrays)). |
 | `arrays` | `true` | When `false`, array elements are not traversed (see [Traversal scope](#traversal-scope-recursive-arrays)). |
 | `only` | `nil` | Restrict conversion to certain key types (`:string`, `:symbol`, or `String` / `Symbol`). See [Key types (`only`)](#key-types-only). |
-| `acronyms` | `nil` | For **camelCase**, **PascalCase**, and **Train-Case** key conversion only: list of strings treated as initialisms. See [Acronyms](#acronyms-initialisms). |
+| `acronyms` | `nil` | For `camel_case` and capitalized `kebab_case` key conversion only: list of strings treated as initialisms. See [Acronyms](#acronyms-initialisms). |
+| `capitalize` | `false` | For `camel_case`, converts to PascalCase. For `kebab_case`, converts to Train-Case. |
+| `upcase` | `false` | For `snake_case`, converts to SCREAMING_SNAKE_CASE. |
 
 Depth starts at `0` for the receiver itself. Each nested Hash, Array, or Struct increases
 the depth by `1`. Leaf values are not counted.
@@ -269,14 +283,14 @@ Use `acronyms` when you want multi-letter abbreviations to stay as you spell the
 
 Where it applies:
 
--   `Keycase.camel_case`, `Keycase.pascal_case`, `Keycase.train_case` (and refinement `String#to_*` / `Symbol#to_*` for those modules) accept a keyword: `acronyms:`.
--   `Keycase.with_camel_case_keys`, `Keycase.with_pascal_case_keys`, and `Keycase.with_train_case_keys` (and the matching `with_*_keys` refinements) accept `acronyms:` in their **options hash** alongside `max_depth`, `on_collision`, `recursive`, `arrays`, and `only`.
+-   `Keycase.camel_case` and `Keycase.kebab_case(..., capitalize: true)` accept a keyword: `acronyms:`.
+-   `Keycase.with_camel_case_keys` and `Keycase.with_kebab_case_keys(..., capitalize: true)` accept `acronyms:` in their **options hash** alongside `max_depth`, `on_collision`, `recursive`, `arrays`, and `only`.
 
 Pass an array of strings. Matching is **case-insensitive** per word; the output uses the string from the array (the last occurrence wins if the same word appears twice with different casing). `nil` or omitting the option keeps the previous behavior.
 
 **camelCase** lowercases the first character of the full name only when the **first** word is *not* one of the configured acronyms. That way `APIResponse` can stay `APIResponse`, while `myHTTPConnection` becomes `myHTTPConnection`.
 
-**PascalCase** and **Train-Case** replace each matching word with the acronym spelling and title-Case other words as before.
+**PascalCase** and **Train-Case** are selected with `capitalize: true`; they replace each matching word with the acronym spelling and title-Case other words as before.
 
 snake_case, SCREAMING_SNAKE, and kebab_case do not use `acronyms`; they still normalize segments with `downcase` / `upcase` as usual.
 
@@ -284,13 +298,15 @@ snake_case, SCREAMING_SNAKE, and kebab_case do not use `acronyms`; they still no
 abbr = %w[API HTTP ID]
 
 Keycase.camel_case("APIResponse", acronyms: abbr)           # => "APIResponse"
-Keycase.pascal_case("HTTPResponseCode", acronyms: abbr)      # => "HTTPResponseCode"
-Keycase.train_case("HTTP-Response-Code", acronyms: abbr)    # => "HTTP-Response-Code"
+Keycase.camel_case("HTTPResponseCode", acronyms: abbr, capitalize: true)
+# => "HTTPResponseCode"
+Keycase.kebab_case("HTTP-Response-Code", acronyms: abbr, capitalize: true)
+# => "HTTP-Response-Code"
 
 using Keycase::CamelCase
 "userID".to_camel_case(acronyms: abbr)                      # => "userID"
 
-Keycase.with_pascal_case_keys({ "api_key" => 1 }, acronyms: abbr)
+Keycase.with_camel_case_keys({ "api_key" => 1 }, acronyms: abbr, capitalize: true)
 # => { "APIKey" => 1 }
 ```
 

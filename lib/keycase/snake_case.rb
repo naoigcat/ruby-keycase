@@ -5,21 +5,24 @@ require_relative "support/tokenizer"
 
 module Keycase
   module SnakeCase
-    def self.convert_string(str)
-      Keycase::Support::Tokenizer.words(str).map(&:downcase).join("_")
+    def self.convert_string(str, upcase: false)
+      words = Keycase::Support::Tokenizer.words(str)
+      converter = upcase ? :upcase : :downcase
+      words.map(&converter).join("_")
     end
 
-    def self.convert(value)
+    def self.convert(value, upcase: false)
       case value
-      when String then convert_string(value)
-      when Symbol then convert_string(value.to_s).to_sym
+      when String then convert_string(value, upcase: upcase)
+      when Symbol then convert_string(value.to_s, upcase: upcase).to_sym
       else value
       end
     end
 
     def self.convert_keys(structure, options = {})
+      upcase = options.fetch(:upcase, false)
       Keycase::Support::StructureKeys.transform(structure, options) do |key|
-        convert(key)
+        convert(key, upcase: upcase)
       end
     end
 
@@ -34,14 +37,14 @@ module Keycase
     end
 
     refine String do
-      def to_snake_case
-        Keycase::SnakeCase.convert_string(self)
+      def to_snake_case(upcase: false)
+        Keycase::SnakeCase.convert_string(self, upcase: upcase)
       end
     end
 
     refine Symbol do
-      def to_snake_case
-        Keycase::SnakeCase.convert(self)
+      def to_snake_case(upcase: false)
+        Keycase::SnakeCase.convert(self, upcase: upcase)
       end
     end
 
@@ -65,8 +68,8 @@ module Keycase
   end
 
   class << self
-    def snake_case(value)
-      SnakeCase.convert(value)
+    def snake_case(value, upcase: false)
+      SnakeCase.convert(value, upcase: upcase)
     end
 
     def with_snake_case_keys(value, options = {})
