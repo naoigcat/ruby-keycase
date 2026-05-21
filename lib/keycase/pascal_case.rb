@@ -62,6 +62,12 @@ module Keycase
         Keycase::PascalCase.convert_keys(self, options)
       end
     end
+
+    refine Struct do
+      def with_pascal_case_keys(options = {})
+        Keycase::PascalCase.convert_keys(self, options)
+      end
+    end
   end
 
   class << self

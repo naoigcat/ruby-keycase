@@ -1,7 +1,33 @@
 # frozen_string_literal: true
 
+require "keycase/support/struct_instantiation"
+
+module KeycaseSpec
+  module StructHelpers
+    module_function
+
+    def keyword_init_supported?
+      Keycase::Support::StructInstantiation.struct_keyword_init_available?
+    end
+
+    def keyword_struct(*members)
+      Keycase::Support::StructInstantiation.build_struct_class(
+        *members,
+        keyword_init: keyword_init_supported?
+      )
+    end
+
+    def new_keyword_struct(klass, attrs)
+      member_order = klass.members
+      Keycase::Support::StructInstantiation.instantiate(klass, attrs, member_order)
+    end
+  end
+end
+
 RSpec.describe Keycase::Support::Transformer do
   using Keycase::CamelCase
+
+  include KeycaseSpec::StructHelpers
 
   describe "cycle detection" do
     it "raises when a Hash references itself" do
@@ -112,6 +138,85 @@ RSpec.describe Keycase::Support::Transformer do
 
     it "rejects non-Array only" do
       expect { { a: 1 }.with_camel_case_keys(only: :string) }.to raise_error(ArgumentError, /only/)
+    end
+  end
+
+  describe "Struct" do
+    let(:keyword_struct_class) { keyword_struct(:foo_bar, :nested_hash) }
+
+    it "converts member names and nested hash keys" do
+      input = new_keyword_struct(keyword_struct_class, foo_bar: 1, nested_hash: { inner_key: 2 })
+      result = input.with_camel_case_keys
+
+      expect(result).to be_a(Struct)
+      expect(result.fooBar).to eq(1)
+      expect(result.nestedHash).to eq({ innerKey: 2 })
+    end
+
+    it "preserves the original class when member names are unchanged" do
+      klass = keyword_struct(:fooBar, :nestedHash)
+      input = new_keyword_struct(klass, fooBar: 1, nestedHash: { inner_key: 2 })
+      result = input.with_camel_case_keys
+
+      expect(result).to be_a(klass)
+      expect(result.fooBar).to eq(1)
+      expect(result.nestedHash).to eq({ innerKey: 2 })
+    end
+
+    it "rebuilds with a new Struct class when member names change" do
+      input = new_keyword_struct(keyword_struct_class, foo_bar: 1, nested_hash: nil)
+      result = input.with_camel_case_keys
+
+      expect(result.class).not_to eq(keyword_struct_class)
+      expect(result).to be_a(Struct)
+      expect(result.fooBar).to eq(1)
+    end
+
+    it "supports positional Struct members" do
+      klass = Struct.new(:foo_bar, :biz_baz)
+      input = klass.new(1, 2)
+      result = input.with_camel_case_keys
+
+      expect(result.fooBar).to eq(1)
+      expect(result.bizBaz).to eq(2)
+    end
+
+    it "does not transform nested structs when recursive is false" do
+      inner = new_keyword_struct(keyword_struct_class, foo_bar: 1, nested_hash: nil)
+      outer = new_keyword_struct(keyword_struct_class, foo_bar: inner, nested_hash: nil)
+      result = outer.with_camel_case_keys(recursive: false)
+
+      expect(result.fooBar).to equal(inner)
+    end
+
+    it "raises on member name collisions" do
+      # Struct member :fooBar must exist alongside :foo_bar to exercise camelCase collision.
+      klass = Struct.new(:foo_bar, :fooBar) # rubocop:disable Naming/MethodName
+      input = klass.new(1, 2)
+      expect { input.with_camel_case_keys }.to raise_error(Keycase::KeyCollisionError)
+    end
+
+    it "detects circular references" do
+      klass = Struct.new(:child)
+      outer = klass.new
+      outer.child = outer
+      expect { outer.with_camel_case_keys }.to raise_error(Keycase::CircularStructureError)
+    end
+
+    it "converts structs inside hashes" do
+      klass = keyword_struct(:foo_bar)
+      point = new_keyword_struct(klass, foo_bar: 1)
+      result = { wrapper_key: point }.with_camel_case_keys
+
+      expect(result[:wrapperKey].fooBar).to eq(1)
+    end
+
+    it "converts a top-level struct via Keycase module function" do
+      klass = keyword_struct(:foo_bar)
+      point = new_keyword_struct(klass, foo_bar: 1)
+      result = Keycase.with_camel_case_keys(point)
+
+      expect(result.fooBar).to eq(1)
     end
   end
 end

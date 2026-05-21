@@ -66,6 +66,12 @@ module Keycase
         Keycase::CamelCase.convert_keys(self, options)
       end
     end
+
+    refine Struct do
+      def with_camel_case_keys(options = {})
+        Keycase::CamelCase.convert_keys(self, options)
+      end
+    end
   end
 
   class << self

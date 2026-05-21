@@ -56,6 +56,12 @@ module Keycase
         Keycase::KebabCase.convert_keys(self, options)
       end
     end
+
+    refine Struct do
+      def with_kebab_case_keys(options = {})
+        Keycase::KebabCase.convert_keys(self, options)
+      end
+    end
   end
 
   class << self

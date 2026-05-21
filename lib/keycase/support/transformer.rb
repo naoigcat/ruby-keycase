@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require_relative "errors"
+require_relative "struct_instantiation"
 require_relative "transformer/visit"
 require_relative "transformer/only_normalization"
+require_relative "transformer/collision"
+require_relative "transformer/structure_builders"
 
 module Keycase
   module Support
@@ -52,12 +55,26 @@ module Keycase
           end
         end
 
+        def transform_struct(struct, state, &key_converter)
+          return struct if state.options[:recursive] == false && state.parent_kind == :struct
+
+          on_collision = resolve_on_collision!(state.options)
+          check_depth!(state.depth, state.options[:max_depth])
+
+          visit_structure(struct, state.visiting, "Struct") do
+            pairs = build_transformed_member_map(struct, state, on_collision, &key_converter)
+            instantiate_struct(struct, pairs)
+          end
+        end
+
         def transform_value(value, state, &key_converter)
           case value
           when Hash
             transform_hash(value, state, &key_converter)
           when Array
             transform_array(value, state, &key_converter)
+          when ::Struct
+            transform_struct(value, state, &key_converter)
           else
             value
           end
@@ -67,61 +84,13 @@ module Keycase
 
         def build_transformed_hash(hash, state, on_collision, &key_converter)
           hash.each_with_object({}) do |key_and_value, memo|
-            assign_transformed_hash_entry(memo, key_and_value, state, on_collision, &key_converter)
-          end
-        end
-
-        def assign_transformed_hash_entry(memo, key_and_value, state, on_collision, &key_converter)
-          key, value = key_and_value
-          new_key = convert_key?(key, state.options) ? key_converter.call(key) : key
-          child = child_state(state, :hash)
-
-          if memo.key?(new_key)
-            ctx = HashCollision.new(memo, new_key, value, key, child)
-            resolve_hash_key_collision!(on_collision, ctx, &key_converter)
-          else
-            memo[new_key] = transform_value(value, child, &key_converter)
+            entry_options = member_entry_options(state, on_collision, :hash)
+            assign_transformed_member_entry(memo, key_and_value, entry_options, &key_converter)
           end
         end
 
         def child_state(state, parent_kind)
           State.new(state.visiting, state.depth + 1, state.options, parent_kind)
-        end
-
-        def resolve_hash_key_collision!(on_collision, collision_details, &key_converter)
-          case on_collision
-          when :raise
-            message = "Keycase detected a key collision: #{collision_details.original_key.inspect} converted to " \
-                      "#{collision_details.new_key.inspect}, which already exists in the transformed hash"
-            raise KeyCollisionError, message
-          when :overwrite
-            d = collision_details
-            d.memo[d.new_key] = transform_value(d.value, d.child_state, &key_converter)
-          when :keep_first
-            nil
-          end
-        end
-
-        def convert_key?(key, options)
-          klasses = options[:__keycase_only_klasses]
-          return true if klasses.nil?
-
-          klasses.any? do |klass|
-            key.is_a?(klass)
-          end
-        end
-
-        def resolve_on_collision!(options)
-          mode = options.fetch(:on_collision, :raise)
-          return mode if %i[raise overwrite keep_first].include?(mode)
-
-          raise ArgumentError, "Keycase on_collision must be :raise, :overwrite, or :keep_first (got #{mode.inspect})"
-        end
-
-        def check_depth!(depth, max_depth)
-          return if max_depth.nil?
-
-          raise StructureTooDeepError, "Keycase nesting exceeds max_depth (#{max_depth})" if depth > max_depth
         end
       end
     end

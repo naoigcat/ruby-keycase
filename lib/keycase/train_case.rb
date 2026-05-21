@@ -62,6 +62,12 @@ module Keycase
         Keycase::TrainCase.convert_keys(self, options)
       end
     end
+
+    refine Struct do
+      def with_train_case_keys(options = {})
+        Keycase::TrainCase.convert_keys(self, options)
+      end
+    end
   end
 
   class << self

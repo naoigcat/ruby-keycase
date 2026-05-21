@@ -113,8 +113,8 @@ For **camelCase**, **PascalCase**, and **Train-Case** you can pass [`acronyms`](
 
 `String#to_*` returns a converted string. `Symbol#to_*` returns a converted symbol. Other objects respond to these refinement-only methods by returning themselves unchanged.
 
-`Hash#with_*_keys` and `Array#with_*_keys` recursively convert Hash keys by default.
-Arrays are traversed so hashes inside arrays are converted. Values that are not Hash or Array objects are returned unchanged.
+`Hash#with_*_keys`, `Array#with_*_keys`, and `Struct#with_*_keys` recursively convert keys by default.
+Arrays are traversed so hashes and structs inside arrays are converted. Other values are returned unchanged.
 Key type is preserved: string keys remain strings, and symbol keys remain symbols.
 Optional [`recursive`](#traversal-scope-recursive-arrays), [`arrays`](#traversal-scope-recursive-arrays), and [`only`](#key-types-only) narrow **what** is traversed and **which** keys are converted.
 
@@ -143,14 +143,14 @@ All structure key conversion methods (`Keycase.with_*_keys`, and `Hash#with_*_ke
 
 | Option | Default | Description |
 | --- | --- | --- |
-| `max_depth` | `nil` | Maximum nested Hash/Array depth to traverse. `nil` means no depth limit. |
+| `max_depth` | `nil` | Maximum nested Hash/Array/Struct depth to traverse. `nil` means no depth limit. |
 | `on_collision` | `:raise` | How to handle multiple source keys that convert to the same destination key in one Hash. See [Key collisions (`on_collision`)](#key-collisions-on_collision). |
 | `recursive` | `true` | When `false`, hashes nested **under another hash** are not converted (see [Traversal scope](#traversal-scope-recursive-arrays)). |
 | `arrays` | `true` | When `false`, array elements are not traversed (see [Traversal scope](#traversal-scope-recursive-arrays)). |
 | `only` | `nil` | Restrict conversion to certain key types (`:string`, `:symbol`, or `String` / `Symbol`). See [Key types (`only`)](#key-types-only). |
 | `acronyms` | `nil` | For **camelCase**, **PascalCase**, and **Train-Case** key conversion only: list of strings treated as initialisms. See [Acronyms](#acronyms-initialisms). |
 
-Depth starts at `0` for the receiver itself. Each nested Hash or Array increases
+Depth starts at `0` for the receiver itself. Each nested Hash, Array, or Struct increases
 the depth by `1`. Leaf values are not counted.
 
 ```rb
@@ -196,6 +196,24 @@ payload.with_camel_case_keys(recursive: false, arrays: false)
 ```
 
 `recursive` and `arrays` must be exactly `true` or `false`; other values raise `ArgumentError`.
+
+With `recursive: false`, **structs nested as members of another struct** are left untouched—the same object as in the input—mirroring hash-under-hash behavior. Structs inside hashes or arrays are still converted.
+
+### Structs
+
+`Struct` member names are converted like hash keys. Nested hashes and arrays inside struct members are traversed by default.
+
+```rb
+using Keycase::CamelCase
+
+Point = Struct.new(:foo_bar, :nested_hash, keyword_init: true)
+point = Point.new(foo_bar: 1, nested_hash: { inner_key: 2 })
+
+point.with_camel_case_keys
+# => #<struct fooBar=1, nestedHash={ innerKey: 2 }>
+```
+
+When member names change, a new anonymous `Struct` class is built (custom `Struct` subclasses are not preserved after rename).
 
 ### Key types (`only`)
 
@@ -302,7 +320,7 @@ overwrite or keep the first key) when you bulk-convert hashes.
 
 | Error | Raised when |
 | --- | --- |
-| `Keycase::CircularStructureError` | A Hash or Array references itself through the current traversal path. |
+| `Keycase::CircularStructureError` | A Hash, Array, or Struct references itself through the current traversal path. |
 | `Keycase::KeyCollisionError` | Multiple source keys in the same Hash convert to the same destination key and `on_collision` is `:raise` (the default). |
 | `Keycase::StructureTooDeepError` | Traversal exceeds the supplied `max_depth`. |
 

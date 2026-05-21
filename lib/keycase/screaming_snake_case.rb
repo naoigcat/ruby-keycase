@@ -56,6 +56,12 @@ module Keycase
         Keycase::ScreamingSnakeCase.convert_keys(self, options)
       end
     end
+
+    refine Struct do
+      def with_screaming_snake_case_keys(options = {})
+        Keycase::ScreamingSnakeCase.convert_keys(self, options)
+      end
+    end
   end
 
   class << self
