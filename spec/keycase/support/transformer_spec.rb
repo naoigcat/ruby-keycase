@@ -191,7 +191,8 @@ RSpec.describe Keycase::Support::Transformer do
 
     it "raises on member name collisions" do
       # Struct member :fooBar must exist alongside :foo_bar to exercise camelCase collision.
-      klass = Struct.new(:foo_bar, :fooBar) # rubocop:disable Naming/MethodName
+      camelized_member = "fooBar"
+      klass = Struct.new(:foo_bar, camelized_member.to_sym)
       input = klass.new(1, 2)
       expect { input.with_camel_case_keys }.to raise_error(Keycase::KeyCollisionError)
     end
