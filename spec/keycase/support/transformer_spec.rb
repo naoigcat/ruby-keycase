@@ -163,6 +163,68 @@ RSpec.describe Keycase::Support::Transformer do
   describe "Struct" do
     let(:keyword_struct_class) { keyword_struct(:foo_bar, :nested_hash) }
 
+    [[:initialize_dup], [:initialize_copy], %i[initialize_dup initialize_copy]].each do |hooks|
+      it "copies members that shadow #{hooks.join(" and ")} without changing the input" do
+        klass = Struct.new(*(hooks + [:value]))
+        input = klass.new(*(([7] * hooks.size) + [{ inner_key: 9 }]))
+        metadata = ["kept"]
+        input.instance_variable_set(:@metadata, metadata)
+        input.freeze
+
+        %i[with_camel_case_keys with_snake_case_keys with_kebab_case_keys].each do |method|
+          result = Keycase.public_send(method, input, only: [])
+          expect(result).to be_a(klass)
+          expect(result).not_to equal(input)
+          hooks.each do |hook|
+            expect(result[hook]).to eq(7)
+          end
+          expect(result[:value]).to eq({ inner_key: 9 })
+          expect(result[:value]).not_to equal(input[:value])
+          expect(result.instance_variable_get(:@metadata)).to equal(metadata)
+          expect(input[:value]).to eq({ inner_key: 9 })
+        end
+        expect(Keycase.with_snake_case_keys(input)[:value]).to eq({ inner_key: 9 })
+      end
+    end
+
+    it "copies keyword structs whose members shadow both copy hooks" do
+      klass = keyword_struct(:initialize_dup, :initialize_copy, :value)
+      input = new_keyword_struct(klass, initialize_dup: 7, initialize_copy: 8, value: { inner_key: 9 })
+      result = input.with_camel_case_keys(only: [])
+
+      expect(result).to be_a(klass)
+      expect(result[:initialize_dup]).to eq(7)
+      expect(result[:initialize_copy]).to eq(8)
+      expect(result[:value]).to eq({ inner_key: 9 })
+      expect(result[:value]).not_to equal(input[:value])
+    end
+
+    it "preserves ordinary subclass copy hooks and instance variables" do
+      calls = []
+      klass = Struct.new(:initialize_dup, :initialize_copy, :value) do
+        define_method(:initialize_dup) do |other|
+          super(other)
+          calls << :dup
+        end
+
+        define_method(:initialize_copy) do |other|
+          super(other)
+          calls << :copy
+        end
+      end
+      input = klass.new(7, 8, { inner_key: 9 })
+      metadata = ["kept"]
+      input.instance_variable_set(:@metadata, metadata)
+      input.freeze
+      result = input.with_camel_case_keys(only: [])
+
+      expect(calls).to eq(%i[copy dup])
+      expect(result).to be_a(klass)
+      expect(result[:value]).to eq({ inner_key: 9 })
+      expect(result.instance_variable_get(:@metadata)).to equal(metadata)
+      expect(input[:value]).to eq({ inner_key: 9 })
+    end
+
     it "enumerates members even when each_pair is a member name" do
       input = Struct.new(:each_pair, :foo_bar).new(7, 9) # rubocop:disable Lint/StructNewOverride
       result = input.with_camel_case_keys
