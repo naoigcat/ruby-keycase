@@ -161,7 +161,9 @@ RSpec.describe Keycase::Support::Transformer do
   end
 
   describe "Struct" do
-    let(:keyword_struct_class) { keyword_struct(:foo_bar, :nested_hash) }
+    let(:keyword_struct_class) do
+      keyword_struct(:foo_bar, :nested_hash)
+    end
 
     [[:initialize_dup], [:initialize_copy], %i[initialize_dup initialize_copy]].each do |hooks|
       it "copies members that shadow #{hooks.join(" and ")} without changing the input" do

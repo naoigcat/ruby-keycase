@@ -24,7 +24,9 @@ RSpec.describe Keycase::Support::Acronyms do
   end
 
   describe ".segment" do
-    let(:map) { described_class.index(%w[API ID]) }
+    let(:map) do
+      described_class.index(%w[API ID])
+    end
 
     it "replaces a word with the configured acronym (case-insensitive match)" do
       expect(described_class.segment("api", map)).to eq "API"
@@ -39,7 +41,9 @@ RSpec.describe Keycase::Support::Acronyms do
   end
 
   describe ".leading_acronym?" do
-    let(:map) { described_class.index(["API"]) }
+    let(:map) do
+      described_class.index(["API"])
+    end
 
     it "returns true when the first token matches a configured acronym" do
       expect(described_class.leading_acronym?("API", map)).to be true

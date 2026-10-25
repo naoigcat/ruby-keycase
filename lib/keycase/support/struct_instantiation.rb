@@ -46,7 +46,10 @@ module Keycase
         if struct_keyword_init?(klass)
           klass.new(**pairs)
         else
-          klass.new(*member_order.map { |member| pairs[member] })
+          values = member_order.map do |member|
+            pairs[member]
+          end
+          klass.new(*values)
         end
       end
     end
