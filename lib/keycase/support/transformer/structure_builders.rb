@@ -65,13 +65,16 @@ module Keycase
           original_members = each_member_pair(original).map(&:first)
           new_members = pairs.keys
 
-          target_klass =
-            if new_members == original_members
-              klass
-            else
-              build_struct_class(*new_members, keyword_init: struct_keyword_init?(klass))
+          if new_members == original_members
+            # Older Rubies cannot identify keyword_init on Struct classes created by callers.
+            return original.dup.tap do |copy|
+              pairs.each do |member, value|
+                copy[member] = value
+              end
             end
+          end
 
+          target_klass = build_struct_class(*new_members, keyword_init: struct_keyword_init?(klass))
           StructInstantiation.instantiate(target_klass, pairs, new_members)
         end
 

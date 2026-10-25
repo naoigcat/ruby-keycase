@@ -163,6 +163,47 @@ RSpec.describe Keycase::Support::Transformer do
       expect(result.nestedHash).to eq({ innerKey: 2 })
     end
 
+    it "copies ordinary keyword structs with unchanged members without modifying frozen input" do
+      skip "keyword_init is unavailable" unless keyword_init_supported?
+
+      members = %i[fooBar nestedHash]
+      klass = Struct.new(*members, keyword_init: true)
+      input = klass.new(fooBar: 1, nestedHash: { inner_key: 2 }).freeze
+      result = input.with_camel_case_keys
+
+      expect(result).to be_a(klass)
+      expect(result).not_to equal(input)
+      expect(result.fooBar).to eq(1)
+      expect(result.nestedHash).to eq({ innerKey: 2 })
+      expect(input.nestedHash).to eq({ inner_key: 2 })
+    end
+
+    it "copies ordinary keyword structs when key conversion is disabled for every case" do
+      skip "keyword_init is unavailable" unless keyword_init_supported?
+
+      klass = Struct.new(:foo_bar, keyword_init: true)
+      input = klass.new(foo_bar: { inner_key: 2 })
+
+      %i[with_camel_case_keys with_snake_case_keys with_kebab_case_keys].each do |method|
+        result = Keycase.public_send(method, input, only: [])
+        expect(result).to be_a(klass)
+        expect(result).not_to equal(input)
+        expect(result.foo_bar).to eq({ inner_key: 2 })
+        expect(result.foo_bar).not_to equal(input.foo_bar)
+      end
+    end
+
+    it "copies positional structs when member names are unchanged" do
+      klass = Struct.new(:value)
+      input = klass.new({ inner_key: 2 }).freeze
+      result = input.with_camel_case_keys
+
+      expect(result).to be_a(klass)
+      expect(result).not_to equal(input)
+      expect(result.value).to eq({ innerKey: 2 })
+      expect(input.value).to eq({ inner_key: 2 })
+    end
+
     it "rebuilds with a new Struct class when member names change" do
       input = new_keyword_struct(keyword_struct_class, foo_bar: 1, nested_hash: nil)
       result = input.with_camel_case_keys
