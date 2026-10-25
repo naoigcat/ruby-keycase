@@ -67,7 +67,7 @@ module Keycase
 
           visit_structure(struct, state.visiting, "Struct") do
             pairs = build_transformed_member_map(struct, state, on_collision, &key_converter)
-            instantiate_struct(struct, pairs)
+            StructInstantiation.rebuild(struct, pairs)
           end
         end
 
