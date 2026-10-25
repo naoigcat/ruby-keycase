@@ -17,20 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@b1da4809b005e0178fe08a1d57317bffc00b7b4c
-        with:
-          ruby-version: ${{ matrix.ruby-version }}
-          bundler-cache: true
-
-      - name: Install dependencies
-        run: bundle install --jobs 4 --retry 3
-
-      - name: Run RuboCop
+      - name: Run RuboCop and RSpec in Docker
+        env:
+          RUBY_VERSION: ${{ matrix.ruby-version }}
         run: |
-          cp rubocop/.rubocop.default.yml .rubocop.default.yml
-          cp rubocop/.rubocop.ruby$(echo ${{ matrix.ruby-version }} | tr -d '.').yml .rubocop.yml
-          bundle exec rubocop
-
-      - name: Run RSpec
-        run: bundle exec rspec
+          docker compose -f compose/compose.yaml -f "compose/compose.ruby${RUBY_VERSION//./}.yaml" \
+            run --rm app bash -ec 'bundle install --jobs 4 --retry 3; bundle exec rubocop; bundle exec rspec'
