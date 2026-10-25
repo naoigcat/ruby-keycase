@@ -101,6 +101,25 @@ RSpec.describe Keycase::Support::Transformer do
   end
 
   describe "arrays" do
+    it "copies only the outer Array without calling methods on its elements" do
+      element = Struct.new(:itself, :value).new(7, 9) # rubocop:disable Lint/StructNewOverride
+      input = [element, { inner_key: 1 }, nil].freeze
+
+      %i[with_camel_case_keys with_snake_case_keys with_kebab_case_keys].each do |method|
+        result = Keycase.public_send(method, input, arrays: false)
+        expect(result).not_to equal(input)
+        expect(result.size).to eq(3)
+        input.each_with_index do |value, index|
+          expect(result[index]).to equal(value)
+        end
+        nested = Keycase.public_send(method, { items: input }, arrays: false)
+        expect(nested[:items]).not_to equal(input)
+        expect(nested[:items].first).to equal(element)
+        expect(Keycase.public_send(method, [], arrays: false)).to eq([])
+      end
+      expect(element[:value]).to eq(9)
+    end
+
     it "does not traverse Array elements when arrays is false" do
       input = { items: [{ nested_key: 1 }] }
       expect(input.with_camel_case_keys(arrays: false)).to eq({ items: [{ nested_key: 1 }] })

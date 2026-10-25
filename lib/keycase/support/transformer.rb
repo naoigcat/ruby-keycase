@@ -43,7 +43,11 @@ module Keycase
         end
 
         def transform_array(array, state, &key_converter)
-          return array.map(&:itself) if state.options[:arrays] == false
+          if state.options[:arrays] == false
+            return array.map do |element|
+              element
+            end
+          end
 
           check_depth!(state.depth, state.options[:max_depth])
 
