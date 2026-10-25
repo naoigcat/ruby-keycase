@@ -6,12 +6,19 @@ module Keycase
       class << self
         private
 
+        def convert_key?(key, options)
+          klasses = options[:__keycase_only_klasses]
+          return true if klasses.nil?
+
+          klasses.any? do |klass|
+            key.is_a?(klass)
+          end
+        end
+
         def normalize_only_classes(only)
           return nil if only.nil?
 
           raise ArgumentError, "Keycase only must be an Array (got #{only.class})" unless only.is_a?(Array)
-
-          return [] if only.empty?
 
           only.map do |spec|
             normalize_only_spec(spec)

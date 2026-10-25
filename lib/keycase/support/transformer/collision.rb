@@ -31,14 +31,6 @@ module Keycase
           raise ArgumentError, "Keycase on_collision must be :raise, :overwrite, or :keep_first (got #{mode.inspect})"
         end
 
-        def convert_key?(key, options)
-          klasses = options[:__keycase_only_klasses]
-          return true if klasses.nil?
-
-          klasses.any? do |klass|
-            key.is_a?(klass)
-          end
-        end
       end
     end
   end
