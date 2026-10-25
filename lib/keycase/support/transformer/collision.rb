@@ -6,22 +6,16 @@ module Keycase
       class << self
         private
 
-        def resolve_member_key_collision!(on_collision, collision_details, &key_converter)
-          case on_collision
-          when :raise
-            message = "Keycase detected a key collision: #{collision_details.original_key.inspect} converted to " \
-                      "#{collision_details.new_key.inspect}, which already exists in the transformed structure"
-            raise KeyCollisionError, message
-          when :overwrite
-            d = collision_details
-            d.memo[d.new_key] = transform_value(d.value, d.child_state, &key_converter)
-          when :keep_first
-            nil
-          end
-        end
+        def keep_existing_key?(memo, new_key, original_key, on_collision)
+          return false unless memo.key?(new_key)
 
-        def resolve_hash_key_collision!(on_collision, collision_details, &key_converter)
-          resolve_member_key_collision!(on_collision, collision_details, &key_converter)
+          if on_collision == :raise
+            message = "Keycase detected a key collision: #{original_key.inspect} converted to " \
+                      "#{new_key.inspect}, which already exists in the transformed structure"
+            raise KeyCollisionError, message
+          end
+
+          on_collision == :keep_first
         end
 
         def resolve_on_collision!(options)
@@ -30,7 +24,6 @@ module Keycase
 
           raise ArgumentError, "Keycase on_collision must be :raise, :overwrite, or :keep_first (got #{mode.inspect})"
         end
-
       end
     end
   end

@@ -11,7 +11,6 @@ module Keycase
   module Support
     module Transformer
       State = Struct.new(:visiting, :depth, :options, :parent_kind)
-      HashCollision = Struct.new(:memo, :new_key, :value, :original_key, :child_state)
 
       class << self
         def enrich_options(options)
@@ -38,7 +37,7 @@ module Keycase
           check_depth!(state.depth, state.options[:max_depth])
 
           visit_structure(hash, state.visiting, "Hash") do
-            build_transformed_hash(hash, state, on_collision, &key_converter)
+            build_transformed_members(hash, child_state(state, :hash), on_collision, &key_converter)
           end
         end
 
@@ -66,8 +65,7 @@ module Keycase
           check_depth!(state.depth, state.options[:max_depth])
 
           visit_structure(struct, state.visiting, "Struct") do
-            pairs = build_transformed_member_map(struct, state, on_collision, &key_converter)
-            StructInstantiation.rebuild(struct, pairs)
+            build_transformed_struct(struct, state, on_collision, &key_converter)
           end
         end
 
@@ -85,13 +83,6 @@ module Keycase
         end
 
         private
-
-        def build_transformed_hash(hash, state, on_collision, &key_converter)
-          hash.each_with_object({}) do |key_and_value, memo|
-            entry_options = member_entry_options(state, on_collision, :hash)
-            assign_transformed_member_entry(memo, key_and_value, entry_options, &key_converter)
-          end
-        end
 
         def child_state(state, parent_kind)
           State.new(state.visiting, state.depth + 1, state.options, parent_kind)
