@@ -144,6 +144,57 @@ RSpec.describe Keycase::Support::Transformer do
   describe "Struct" do
     let(:keyword_struct_class) { keyword_struct(:foo_bar, :nested_hash) }
 
+    it "enumerates members even when each_pair is a member name" do
+      input = Struct.new(:each_pair, :foo_bar).new(7, 9) # rubocop:disable Lint/StructNewOverride
+      result = input.with_camel_case_keys
+
+      expect(result[:eachPair]).to eq(7)
+      expect(result[:fooBar]).to eq(9)
+      expect(input[:foo_bar]).to eq(9)
+    end
+
+    %i[dup tap []=].each do |member|
+      it "copies unchanged members when #{member} is a member name" do
+        klass = Struct.new(member, :value)
+        input = klass.new(7, { inner_key: 9 }).freeze
+        result = input.with_camel_case_keys(only: [])
+
+        expect(result).to be_a(klass)
+        expect(result).not_to equal(input)
+        expect(result[member]).to eq(7)
+        expect(result[:value]).to eq({ inner_key: 9 })
+        expect(result[:value]).not_to equal(input[:value])
+        expect(input[:value]).to eq({ inner_key: 9 })
+      end
+    end
+
+    it "preserves keyword initialization when class is a member name" do
+      skip "keyword_init? is unavailable" unless Struct.new(:x).respond_to?(:keyword_init?)
+
+      klass = Struct.new(:class, :foo_bar, keyword_init: true) # rubocop:disable Lint/StructNewOverride
+      input = klass.new(class: 7, foo_bar: 9)
+      result = input.with_camel_case_keys
+      result_class = Object.instance_method(:class).bind(result).call
+
+      expect(result_class.keyword_init?).to be(true)
+      expect(result[:class]).to eq(7)
+      expect(result[:fooBar]).to eq(9)
+    end
+
+    it "uses object identity when object_id is a member name" do
+      klass = Struct.new(:object_id, :child) # rubocop:disable Lint/StructNewOverride
+      inner = klass.new(7, nil)
+      outer = klass.new(7, inner)
+      result = outer.with_camel_case_keys
+
+      expect(result[:objectId]).to eq(7)
+      expect(result[:child][:objectId]).to eq(7)
+      expect(result[:child][:child]).to be_nil
+
+      outer[:child] = outer
+      expect { outer.with_camel_case_keys }.to raise_error(Keycase::CircularStructureError)
+    end
+
     it "converts member names and nested hash keys" do
       input = new_keyword_struct(keyword_struct_class, foo_bar: 1, nested_hash: { inner_key: 2 })
       result = input.with_camel_case_keys

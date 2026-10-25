@@ -7,7 +7,7 @@ module Keycase
         private
 
         def visit_structure(structure, visiting, kind)
-          oid = structure.object_id
+          oid = Object.instance_method(:object_id).bind(structure).call
           raise CircularStructureError, circular_reference_message(kind) if visiting.include?(oid)
 
           visiting.add(oid)

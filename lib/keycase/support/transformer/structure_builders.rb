@@ -22,7 +22,8 @@ module Keycase
         end
 
         def each_member_pair(structure)
-          structure.each_pair
+          # Struct member accessors can hide the methods used by conversion.
+          ::Struct.instance_method(:each_pair).bind(structure).to_enum(:call)
         end
 
         def assign_transformed_member_entry(memo, key_and_value, entry_options, &key_converter)
@@ -61,21 +62,24 @@ module Keycase
         end
 
         def instantiate_struct(original, pairs)
-          klass = original.class
+          klass = Object.instance_method(:class).bind(original).call
           original_members = each_member_pair(original).map(&:first)
           new_members = pairs.keys
 
-          if new_members == original_members
-            # Older Rubies cannot identify keyword_init on Struct classes created by callers.
-            return original.dup.tap do |copy|
-              pairs.each do |member, value|
-                copy[member] = value
-              end
-            end
-          end
+          # Older Rubies cannot identify keyword_init on Struct classes created by callers.
+          return copy_struct(original, pairs) if new_members == original_members
 
           target_klass = build_struct_class(*new_members, keyword_init: struct_keyword_init?(klass))
           StructInstantiation.instantiate(target_klass, pairs, new_members)
+        end
+
+        def copy_struct(original, pairs)
+          copy = Object.instance_method(:dup).bind(original).call
+          writer = ::Struct.instance_method(:[]=).bind(copy)
+          pairs.each do |member, value|
+            writer.call(member, value)
+          end
+          copy
         end
 
         def build_struct_class(*members, keyword_init:)
