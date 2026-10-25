@@ -14,6 +14,17 @@ RSpec.describe Keycase::SnakeCase do
       expect(Keycase.snake_case(:some_words, upcase: true)).to eq :SOME_WORDS
       expect(Keycase.with_snake_case_keys({ "some-key" => 1 }, upcase: true)).to eq({ "SOME_KEY" => 1 })
     end
+
+    it "documents keep_first with colliding String keys" do
+      input = { "SomeKey" => 1, "someKey" => 2 }
+      expect(Keycase.with_snake_case_keys(input, on_collision: :keep_first)).to eq({ "some_key" => 1 })
+
+      readme = File.read(File.expand_path("../../README.md", __dir__))
+      expect(readme).to include(<<~RUBY)
+        Keycase.with_snake_case_keys({ "SomeKey" => 1, "someKey" => 2 }, on_collision: :keep_first)
+        # => { "some_key" => 1 }
+      RUBY
+    end
   end
 
   describe "refinements" do

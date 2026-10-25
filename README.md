@@ -273,7 +273,7 @@ h.with_camel_case_keys(on_collision: :overwrite)
 h.with_camel_case_keys(on_collision: :keep_first)
 # => { :userId => 1 }
 
-Keycase.with_snake_case_keys({ "SomeKey" => 1, someKey: 2 }, on_collision: :keep_first)
+Keycase.with_snake_case_keys({ "SomeKey" => 1, "someKey" => 2 }, on_collision: :keep_first)
 # => { "some_key" => 1 }
 ```
 

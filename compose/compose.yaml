@@ -7,6 +7,7 @@ services:
     volumes:
       - ../lib:/app/lib
       - ../spec:/app/spec
+      - ../README.md:/app/README.md
       - ../.git:/app/.git
       - ../.rspec:/app/.rspec
       - ../rubocop/.rubocop.default.yml:/app/.rubocop.default.yml
