@@ -31,12 +31,6 @@ module Keycase
           raise ArgumentError, "Keycase on_collision must be :raise, :overwrite, or :keep_first (got #{mode.inspect})"
         end
 
-        def check_depth!(depth, max_depth)
-          return if max_depth.nil?
-
-          raise StructureTooDeepError, "Keycase nesting exceeds max_depth (#{max_depth})" if depth > max_depth
-        end
-
         def convert_key?(key, options)
           klasses = options[:__keycase_only_klasses]
           return true if klasses.nil?
