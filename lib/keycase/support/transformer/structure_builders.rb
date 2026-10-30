@@ -8,8 +8,12 @@ module Keycase
 
         def build_transformed_struct(struct, state, on_collision, &key_converter)
           pairs = build_transformed_members(
-            StructInstantiation.each_member_pair(struct), child_state(state, :struct), on_collision, &key_converter
-          )
+            StructInstantiation.each_member_pair(struct), child_state(state, :struct), on_collision
+          ) do |key|
+            new_key = key_converter.call(key)
+            # Struct cannot define an empty member name.
+            new_key.to_s.empty? ? key : new_key
+          end
           StructInstantiation.rebuild(struct, pairs)
         end
 

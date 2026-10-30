@@ -64,6 +64,40 @@ RSpec.describe "Structure conversion" do # rubocop:disable RSpec/DescribeClass
         end
       end
 
+      %i[raise overwrite keep_first].each do |mode|
+        it "preserves symbol-only Struct members and converts their values with #{mode}" do
+          # Exercise a member that shadows the Struct writer.
+          input = Struct.new(:[]=, :_, :foo_bar).new({ inner_key: 1 }, false, 2).freeze # rubocop:disable Lint/StructNewOverride
+
+          result = Keycase.public_send(method, input, on_collision: mode)
+
+          expect(result.members).to eq([:[]=, :_, converted_key])
+          expect(result[:[]=]).to eq(nested_key => 1)
+          expect(result[:_]).to be(false)
+          expect(result[converted_key]).to eq(2)
+          expect(input[:[]=]).to eq(inner_key: 1)
+          expect(input[:foo_bar]).to eq(2)
+        end
+      end
+
+      it "copies a Struct whose member names all convert to empty names" do
+        klass = Struct.new(:[]=, :_) # rubocop:disable Lint/StructNewOverride
+        input = klass.new(nil, { inner_key: 1 }).freeze
+
+        result = Keycase.public_send(method, input)
+
+        expect(result).to be_a(klass)
+        expect(result).not_to equal(input)
+        expect(result[:[]=]).to be_nil
+        expect(result[:_]).to eq(nested_key => 1)
+        expect(input[:_]).to eq(inner_key: 1)
+      end
+
+      it "still converts symbol-only Hash keys to empty names" do
+        expect(Keycase.public_send(method, { _: 1 })).to eq("": 1)
+        expect { Keycase.public_send(method, { :_ => 1, :[]= => 2 }) }.to raise_error(Keycase::KeyCollisionError)
+      end
+
       [nil, false].each do |first_value|
         it "keeps a colliding #{first_value.inspect} value without traversing the discarded value" do
           cycle = []

@@ -216,6 +216,7 @@ With `recursive: false`, **structs nested as members of another struct** are lef
 ### Structs
 
 `Struct` member names are converted like hash keys. Nested hashes and arrays inside struct members are traversed by default.
+If a member name converts to an empty name (for example `:[]=` or `:_`), its original name is preserved; its value is still traversed.
 
 ```rb
 using Keycase::CamelCase
