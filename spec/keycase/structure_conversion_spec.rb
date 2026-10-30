@@ -20,6 +20,50 @@ RSpec.describe "Structure conversion" do # rubocop:disable RSpec/DescribeClass
         Struct.new(:foo_bar, camelized_member.to_sym)
       end
 
+      describe "identity Hash" do
+        let(:input) do
+          hash = {}.compare_by_identity
+          hash["foo_bar".dup] = 1
+          hash["foo_bar".dup] = 2
+          hash.freeze
+        end
+
+        %i[raise overwrite keep_first].each do |mode|
+          it "preserves unconverted keys and both values with #{mode}" do
+            result = Keycase.public_send(method, input, only: [], on_collision: mode)
+
+            expect(result).to be_compare_by_identity
+            expect(result.keys[0]).to equal(input.keys[0])
+            expect(result.keys[1]).to equal(input.keys[1])
+            expect(result.values).to eq([1, 2])
+            expect(input.values).to eq([1, 2])
+          end
+
+          it "keeps distinct converted string keys with #{mode}" do
+            result = Keycase.public_send(method, input, on_collision: mode)
+
+            expect(result).to be_compare_by_identity
+            expect(result.keys).to eq([converted_key.to_s, converted_key.to_s])
+            expect(result.keys[0]).not_to equal(result.keys[1])
+            expect(result.values).to eq([1, 2])
+            expect(input.keys).to eq(%w[foo_bar foo_bar])
+          end
+        end
+
+        it "preserves identity comparison under Hash, Array, and Struct containers" do
+          container = { items: [Struct.new(:foo_bar).new(input)] }
+
+          result = Keycase.public_send(method, container, only: [])
+          nested = result[:items].first[:foo_bar]
+
+          expect(result).not_to be_compare_by_identity
+          expect(nested).to be_compare_by_identity
+          expect(nested.keys[0]).to equal(input.keys[0])
+          expect(nested.keys[1]).to equal(input.keys[1])
+          expect(nested.values).to eq([1, 2])
+        end
+      end
+
       [nil, false].each do |first_value|
         it "keeps a colliding #{first_value.inspect} value without traversing the discarded value" do
           cycle = []

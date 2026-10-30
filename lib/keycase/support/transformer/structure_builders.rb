@@ -14,7 +14,8 @@ module Keycase
         end
 
         def build_transformed_members(members, child, on_collision, &key_converter)
-          members.each_with_object({}) do |(key, value), memo|
+          result = members.is_a?(Hash) && members.compare_by_identity? ? {}.compare_by_identity : {}
+          members.each_with_object(result) do |(key, value), memo|
             new_key = convert_key?(key, child.options) ? key_converter.call(key) : key
             next if keep_existing_key?(memo, new_key, key, on_collision)
 
