@@ -359,7 +359,7 @@ hash.with_camel_case_keys
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests with the local Ruby version defined in `mise.toml` (currently Ruby 3.4.9). You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`. To publish a version, use the GitHub Actions workflow described in [Releasing](#releasing).
 
 Tasks are defined in `mise.toml`. They run **RuboCop, and RSpec inside Docker** (via Docker Compose), so Docker must be available. Use these tasks for syntax checks and tests across supported Ruby versions.
 
@@ -388,11 +388,16 @@ To list all tasks and descriptions:
 mise tasks
 ```
 
-## Release Authentication
+## Releasing
 
 Gem releases from GitHub Actions use RubyGems Trusted Publishing. No long-lived RubyGems API key or GitHub secret is required; GitHub Actions obtains a short-lived RubyGems API token through OIDC during the release job.
 
-Configure the trusted publisher once on RubyGems.org:
+### One-time setup
+
+1.  Open the repository's [Settings → Environments](https://github.com/naoigcat/ruby-keycase/settings/environments) and create an environment named `release` if it does not exist. If deployment branch restrictions are enabled, allow `main`.
+2.  Ensure repository or organization rules allow GitHub Actions to run the actions used in `.github/workflows/release.yml` and allow its `GITHUB_TOKEN` to create release tags (`v*`).
+
+Configure the [trusted publisher](https://guides.rubygems.org/trusted-publishing/) on RubyGems.org:
 
 1.  Log in to <https://rubygems.org> with an owner account for the `keycase` gem.
 2.  Open the [`keycase`](https://rubygems.org/gems/keycase) gem page and go to `Trusted publishers`.
@@ -403,7 +408,18 @@ Configure the trusted publisher once on RubyGems.org:
     -   Workflow filename: `release.yml`
     -   Environment name: `release`
 
-After this setup, run the `Release Gem` workflow manually from GitHub Actions. Enter the version already committed in `lib/keycase/version.rb`; the workflow verifies the version, creates the `v<version>` tag through Bundler's release task, and publishes the gem to RubyGems.org.
+### Publish 1.3.0
+
+1.  Commit the changes, including `Keycase::VERSION = "1.3.0"` in `lib/keycase/version.rb`, and merge or push them to `main`. Confirm that the `CI` workflow passes for that commit.
+2.  Open [Actions → Release Gem](https://github.com/naoigcat/ruby-keycase/actions/workflows/release.yml), click **Run workflow**, select `main`, and enter `1.3.0` for `version`. Click **Run workflow** to publish.
+3.  If the `release` environment requires approval, approve the deployment in the workflow run.
+4.  Confirm that the workflow succeeds, the `v1.3.0` tag exists on GitHub, and [keycase 1.3.0](https://rubygems.org/gems/keycase/versions/1.3.0) is available on RubyGems.org.
+
+The workflow checks the version input, rejects an existing release tag, runs RSpec, and uses Bundler's release task to create the tag and publish the gem. Do not create `v1.3.0` manually before running it.
+
+If publishing fails after the tag was pushed, check RubyGems.org before retrying. An existing tag makes this workflow fail on rerun. If the version is already published, do not delete or recreate its tag; if it is unpublished, resolve the failure and remove only the failed release's tag before rerunning.
+
+For later releases, update `lib/keycase/version.rb` and substitute the new version in these steps.
 
 ## Contributing
 
