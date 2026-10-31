@@ -80,6 +80,35 @@ RSpec.describe "Structure conversion" do # rubocop:disable RSpec/DescribeClass
         end
       end
 
+      [false, true].each do |keyword_init|
+        it "rebuilds a Struct with an initialize member (keyword_init: #{keyword_init})" do
+          if keyword_init && !Keycase::Support::StructInstantiation.struct_keyword_init_available?
+            skip "keyword_init is unavailable"
+          end
+
+          member = :Initialize
+          klass = if keyword_init
+                    Struct.new(member, :foo_bar, keyword_init: true)
+                  else
+                    Struct.new(member, :foo_bar)
+                  end
+          input = if keyword_init
+                    klass.new(Initialize: false, foo_bar: { inner_key: 2 })
+                  else
+                    klass.new(false, { inner_key: 2 })
+                  end.freeze
+
+          result = Keycase.public_send(method, input)
+
+          expect(result.members).to eq([:initialize, converted_key])
+          expect(result[:initialize]).to be(false)
+          expect(result[converted_key]).to eq(nested_key => 2)
+          expect(input[:Initialize]).to be(false)
+          expect(input[:foo_bar]).to eq(inner_key: 2)
+          expect(result.class.keyword_init?).to eq(klass.keyword_init?) if klass.respond_to?(:keyword_init?)
+        end
+      end
+
       it "copies a Struct whose member names all convert to empty names" do
         klass = Struct.new(:[]=, :_) # rubocop:disable Lint/StructNewOverride
         input = klass.new(nil, { inner_key: 1 }).freeze

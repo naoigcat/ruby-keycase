@@ -60,14 +60,18 @@ module Keycase
       end
 
       def instantiate(klass, pairs, member_order)
+        instance = klass.allocate
+        # A converted member named initialize can hide Struct's initializer.
+        initializer = ::Struct.instance_method(:initialize).bind(instance)
         if struct_keyword_init?(klass)
-          klass.new(**pairs)
+          initializer.call(**pairs)
         else
           values = member_order.map do |member|
             pairs[member]
           end
-          klass.new(*values)
+          initializer.call(*values)
         end
+        instance
       end
 
       def copy_struct(original, pairs, klass)
