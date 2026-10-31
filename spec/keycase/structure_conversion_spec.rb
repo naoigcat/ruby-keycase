@@ -98,6 +98,37 @@ RSpec.describe "Structure conversion" do # rubocop:disable RSpec/DescribeClass
         expect { Keycase.public_send(method, { :_ => 1, :[]= => 2 }) }.to raise_error(Keycase::KeyCollisionError)
       end
 
+      it "limits empty-name preservation to Struct members across nested containers" do
+        hash = { "_" => 1, :[]= => 2, inner_key: 3 }.freeze
+        child = Struct.new(:_).new(hash).freeze
+        input = Struct.new(:_, :payload).new(hash, { items: [hash, child] }).freeze
+
+        result = Keycase.public_send(method, input)
+        expected = { "" => 1, :"" => 2, nested_key => 3 }
+
+        expect(result[:_]).to eq(expected)
+        expect(result[:payload][:items].first).to eq(expected)
+        expect(result[:payload][:items].last[:_]).to eq(expected)
+        expect(input[:_]).to equal(hash)
+        expect(hash).to eq({ "_" => 1, :[]= => 2, inner_key: 3 })
+      end
+
+      %i[raise overwrite keep_first].each do |mode|
+        it "applies #{mode} to empty Hash keys nested under a Struct" do
+          hash = { :_ => 1, :[]= => 2 }.freeze
+          input = Struct.new(:_).new({ items: [hash] }).freeze
+
+          if mode == :raise
+            expect { Keycase.public_send(method, input, on_collision: mode) }.to raise_error(Keycase::KeyCollisionError)
+          else
+            result = Keycase.public_send(method, input, on_collision: mode)
+            expect(result[:_][:items]).to eq([{ "": mode == :overwrite ? 2 : 1 }])
+          end
+          expect(hash).to eq({ :_ => 1, :[]= => 2 })
+          expect(input[:_][:items].first).to equal(hash)
+        end
+      end
+
       [nil, false].each do |first_value|
         it "keeps a colliding #{first_value.inspect} value without traversing the discarded value" do
           cycle = []
