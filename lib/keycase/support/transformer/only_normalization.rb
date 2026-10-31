@@ -11,7 +11,8 @@ module Keycase
           return true if klasses.nil?
 
           klasses.any? do |klass|
-            key.is_a?(klass)
+            # Struct keys can hide is_a? with a member accessor.
+            klass === key # rubocop:disable Style/CaseEquality
           end
         end
 

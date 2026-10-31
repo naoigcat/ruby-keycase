@@ -230,6 +230,24 @@ RSpec.describe "Structure conversion" do # rubocop:disable RSpec/DescribeClass
         expect(result[:items].first[converted_key]).not_to equal(input[:items].first[:foo_bar])
       end
 
+      it "filters key types without calling a Struct key's is_a? member" do
+        key = Struct.new(:is_a?).new(false).freeze # rubocop:disable Lint/StructNewOverride
+        input = { key => 7, "foo_bar" => 9, foo_bar: 11 }.freeze
+
+        result = Keycase.public_send(method, input, only: [:string])
+
+        expect(result).to eq(key => 7, converted_key.to_s => 9, foo_bar: 11)
+        expect(result.keys.first).to equal(key)
+        expect(Keycase.public_send(method, input, only: [:symbol])).to eq(
+          key => 7, "foo_bar" => 9, converted_key => 11
+        )
+        expect(Keycase.public_send(method, input, only: [String, Symbol])).to eq(
+          key => 7, converted_key.to_s => 9, converted_key => 11
+        )
+        expect(Keycase.public_send(method, input, only: [])).to eq(input)
+        expect(input).to eq(key => 7, "foo_bar" => 9, foo_bar: 11)
+      end
+
       it "leaves frozen caller options unchanged" do
         options = { only: [:symbol].freeze, recursive: true, arrays: true }.freeze
 
