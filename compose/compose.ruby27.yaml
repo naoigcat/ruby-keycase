@@ -1,6 +1,9 @@
 services:
   app:
     image: ruby:2.7.8
+    environment:
+      # Bundler 2.1 selects Prism binaries that require Ruby 3.3; build from source for Ruby 2.7.
+      BUNDLE_FORCE_RUBY_PLATFORM: "true"
     volumes:
       - ../rubocop/.rubocop.ruby27.yml:/app/.rubocop.yml
 
